@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import type React from 'react';
-import { StyleSheet, Text, View, type ViewStyle } from 'react-native';
+import { Image, StyleSheet, Text, View, type ViewStyle } from 'react-native';
 import { Colors } from '../../constants/colors';
 
 interface AvatarProps {
@@ -10,7 +10,7 @@ interface AvatarProps {
   style?: ViewStyle;
 }
 
-export const Avatar: React.FC<AvatarProps> = ({ name = 'Alex', size = 48, style }) => {
+export const Avatar: React.FC<AvatarProps> = ({ source, name = 'Alex', size = 48, style }) => {
   const getInitials = (str: string) => {
     return str
       .split(' ')
@@ -34,7 +34,9 @@ export const Avatar: React.FC<AvatarProps> = ({ name = 'Alex', size = 48, style 
         style,
       ]}
     >
-      {initials ? (
+      {source ? (
+        <Image source={{ uri: source }} style={{ width: size, height: size }} />
+      ) : initials ? (
         <Text style={[styles.initials, { fontSize: size * 0.4 }]}>{initials}</Text>
       ) : (
         <Ionicons name="person" size={size * 0.5} color={Colors.primary} />

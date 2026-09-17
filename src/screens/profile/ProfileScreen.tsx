@@ -116,7 +116,7 @@ export const ProfileScreen: React.FC<any> = ({ navigation }) => {
             onPress={() =>
               Alert.alert(
                 'Saved Places',
-                'Home: Malad West\nWork: Bandra Kurla Complex\nAirport: Terminal 2',
+                'Home: Sector 56\nWork: DLF Cyber City\nRecent: Ambience Mall',
               )
             }
           >
@@ -134,7 +134,7 @@ export const ProfileScreen: React.FC<any> = ({ navigation }) => {
           <TouchableOpacity
             style={styles.menuRow}
             activeOpacity={0.7}
-            onPress={() => navigation.navigate('WalletTab')}
+            onPress={() => navigation.navigate('Wallet')}
           >
             <View style={styles.menuLeft}>
               <View style={[styles.menuIconBg, { backgroundColor: '#DCFCE7' }]}>

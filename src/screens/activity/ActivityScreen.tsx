@@ -23,6 +23,7 @@ export const ActivityScreen: React.FC<any> = ({ navigation }) => {
   const insets = useSafeAreaInsets();
   const rideHistory = useUserStore((state) => state.rideHistory);
   const setDestination = useRideStore((state) => state.setDestination);
+  const setSelectedVehicle = useRideStore((state) => state.setSelectedVehicle);
   const [activeFilter, setActiveFilter] = useState<'ALL' | 'COMPLETED' | 'CANCELLED'>('ALL');
   const [selectedRide, setSelectedRide] = useState<ActiveRide | null>(null);
 
@@ -34,8 +35,9 @@ export const ActivityScreen: React.FC<any> = ({ navigation }) => {
 
   const handleRebook = (ride: ActiveRide) => {
     setDestination(ride.destination);
+    setSelectedVehicle(ride.vehicle);
     setSelectedRide(null);
-    navigation.navigate('VehicleSelect');
+    navigation.navigate('RoutePreview');
   };
 
   return (
@@ -110,7 +112,17 @@ export const ActivityScreen: React.FC<any> = ({ navigation }) => {
               {/* Vehicle & Price Footer */}
               <View style={styles.cardFooter}>
                 <View style={styles.vehicleInfo}>
-                  <Ionicons name="car-outline" size={16} color={Colors.gray600} />
+                  <Ionicons
+                    name={
+                      item.vehicle.group === 'bike'
+                        ? 'bicycle'
+                        : item.vehicle.group === 'auto'
+                          ? 'bus-outline'
+                          : 'car-outline'
+                    }
+                    size={16}
+                    color={Colors.gray600}
+                  />
                   <Text style={styles.vehicleName}>
                     {item.vehicle.name} • {item.distanceKm} km
                   </Text>

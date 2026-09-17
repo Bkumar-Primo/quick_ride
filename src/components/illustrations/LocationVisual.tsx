@@ -123,7 +123,7 @@ export const LocationVisual: React.FC<LocationVisualProps> = ({ height = 280 }) 
           strokeLinecap="round"
         />
 
-        {/* White Sedan Car in Foreground */}
+        {/* White premium Car in Foreground */}
         <G transform="translate(100, 175)">
           <Ellipse cx="100" cy="62" rx="90" ry="8" fill="#1E2430" opacity="0.3" />
           <Path

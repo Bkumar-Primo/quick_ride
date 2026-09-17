@@ -12,11 +12,11 @@ export const MOCK_OFFERS: PromoCode[] = [
   },
   {
     id: 'promo-prime',
-    code: 'PRIMESEDAN',
+    code: 'PRIMEpremium',
     discountPercentage: 25,
     maxDiscount: 100,
     minAmount: 250,
-    description: 'Flat ₹100 off on Prime Sedan bookings',
+    description: 'Flat ₹100 off on Prime premium bookings',
     expiresInDays: 3,
   },
   {

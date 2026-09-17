@@ -1,19 +1,12 @@
 import { create } from 'zustand';
 import {
   CURRENT_LOCATION,
-  MOCK_DRIVERS,
+  driverForVehicle,
   MOCK_OFFERS,
   MOCK_VEHICLES,
   POPULAR_DESTINATIONS,
 } from '../data';
-import {
-  type ActiveRide,
-  DriverInfo,
-  type LocationPoint,
-  type PromoCode,
-  type RideStatus,
-  type VehicleOption,
-} from '../types';
+import type { ActiveRide, LocationPoint, PromoCode, RideStatus, VehicleOption } from '../types';
 import { useUserStore } from './userStore';
 
 interface RideState {
@@ -25,14 +18,13 @@ interface RideState {
   activeRide: ActiveRide | null;
   searchCountdown: number;
 
-  // Actions
   setPickup: (loc: LocationPoint) => void;
   setDestination: (loc: LocationPoint | null) => void;
   setSelectedVehicle: (vehicle: VehicleOption) => void;
   applyPromo: (promo: PromoCode | null) => void;
 
-  // Lifecycle triggers
   startSearchingForDriver: () => void;
+  simulateDriverArriving: () => void;
   simulateDriverArrived: () => void;
   startTrip: () => void;
   completeTrip: (rating?: number, driverTip?: number, reviewTags?: string[]) => void;
@@ -43,8 +35,8 @@ interface RideState {
 export const useRideStore = create<RideState>((set, get) => ({
   currentStatus: 'IDLE',
   pickup: CURRENT_LOCATION,
-  destination: POPULAR_DESTINATIONS[0], // Default BKC for immediate quick demo
-  selectedVehicle: MOCK_VEHICLES[1], // Quick Prime Sedan
+  destination: POPULAR_DESTINATIONS[0],
+  selectedVehicle: MOCK_VEHICLES[0],
   appliedPromo: MOCK_OFFERS[0], // QUICK50
   activeRide: null,
   searchCountdown: 3,
@@ -58,25 +50,25 @@ export const useRideStore = create<RideState>((set, get) => ({
   applyPromo: (promo) => set({ appliedPromo: promo }),
 
   startSearchingForDriver: () => {
-    const { pickup, destination, selectedVehicle, appliedPromo } = get();
+    const { pickup, destination, selectedVehicle } = get();
     const dest = destination || POPULAR_DESTINATIONS[0];
 
     const baseFare = selectedVehicle.basePrice;
     const distanceFare = Math.round(selectedVehicle.price - baseFare);
-    const tax = Math.round(selectedVehicle.price * 0.05);
-    const discount = appliedPromo ? Math.min(appliedPromo.maxDiscount, 50) : 0;
-    const totalFare = selectedVehicle.price + tax - discount;
+    const tax = 0;
+    const discount = 0;
+    const totalFare = selectedVehicle.price;
 
     const newRide: ActiveRide = {
       id: `ride-${Date.now()}`,
       pickup,
       destination: dest,
       vehicle: selectedVehicle,
-      driver: MOCK_DRIVERS[0], // Assigned on driver match
+      driver: driverForVehicle(selectedVehicle),
       otpPin: '4821',
       status: 'SEARCHING_DRIVER',
-      distanceKm: 14.8,
-      durationMin: 28,
+      distanceKm: 6.8,
+      durationMin: 12,
       fareBreakdown: {
         baseFare,
         distanceFare,
@@ -103,11 +95,23 @@ export const useRideStore = create<RideState>((set, get) => ({
           activeRide: {
             ...newRide,
             status: 'DRIVER_ASSIGNED',
-            driver: MOCK_DRIVERS[0],
+            driver: driverForVehicle(selectedVehicle),
           },
         });
       }
     }, 2800);
+  },
+
+  simulateDriverArriving: () => {
+    const active = get().activeRide;
+    if (!active) return;
+    set({
+      currentStatus: 'DRIVER_ARRIVING',
+      activeRide: {
+        ...active,
+        status: 'DRIVER_ARRIVING',
+      },
+    });
   },
 
   simulateDriverArrived: () => {

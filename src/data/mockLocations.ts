@@ -2,15 +2,108 @@ import type { LocationPoint } from '../types';
 
 export const CURRENT_LOCATION: LocationPoint = {
   id: 'loc-current',
-  title: 'Oberoi Mall, Goregaon East',
-  subtitle: 'Western Express Highway, Yashodham, Mumbai',
-  address: 'Western Express Highway, Yashodham, Goregaon, Mumbai, Maharashtra 400063',
-  latitude: 19.1738,
-  longitude: 72.8611,
+  title: 'MG Road, Sector 25',
+  subtitle: 'Gurugram, Haryana 122002',
+  address: 'MG Road, Sector 25, Gurugram, Haryana 122002',
+  latitude: 28.4595,
+  longitude: 77.0266,
   type: 'recent',
 };
 
+export const MG_ROAD_METRO: LocationPoint = {
+  id: 'loc-metro',
+  title: 'MG Road Metro Station',
+  subtitle: 'MG Road, Gurugram',
+  address: 'MG Road Metro Station, Gurugram, Haryana 122002',
+  latitude: 28.4808,
+  longitude: 77.0802,
+  type: 'recent',
+};
+
+export const SAHARA_MALL: LocationPoint = {
+  id: 'loc-sahara',
+  title: 'Sahara Mall',
+  subtitle: 'MG Road, Gurugram',
+  address: 'Sahara Mall, MG Road, Gurugram, Haryana 122002',
+  latitude: 28.4794,
+  longitude: 77.0809,
+  type: 'popular',
+};
+
+export const KINGDOM_OF_DREAMS: LocationPoint = {
+  id: 'loc-kod',
+  title: 'Kingdom of Dreams',
+  subtitle: 'Sector 29, Gurugram',
+  address: 'Kingdom of Dreams, Sector 29, Gurugram, Haryana 122001',
+  latitude: 28.4679,
+  longitude: 77.0688,
+  type: 'popular',
+};
+
+export const ARAVALLI_PARK: LocationPoint = {
+  id: 'loc-aravalli',
+  title: 'Aravalli Biodiversity Park',
+  subtitle: 'Gurugram',
+  address: 'Aravalli Biodiversity Park, Gurugram, Haryana 122001',
+  latitude: 28.48,
+  longitude: 77.05,
+  type: 'popular',
+};
+
+export const DEMO_ROUTE = {
+  distanceKm: 6.8,
+  durationMin: 12,
+  estimatedFare: 180,
+};
+
+export const GURUGRAM_HOME: LocationPoint = {
+  id: 'loc-home-ggn',
+  title: 'Home',
+  subtitle: 'Sector 56',
+  address: 'Sector 56, Gurugram, Haryana 122011',
+  latitude: 28.4245,
+  longitude: 77.101,
+  type: 'home',
+};
+
+export const DLF_CYBER_CITY: LocationPoint = {
+  id: 'loc-cyber',
+  title: 'DLF Cyber City',
+  subtitle: 'Phase 2, Gurugram',
+  address: 'DLF Cyber City, Gurugram, Haryana 122002',
+  latitude: 28.4946,
+  longitude: 77.0882,
+  type: 'work',
+};
+
+export const AMBIENCE_MALL: LocationPoint = {
+  id: 'loc-ambience',
+  title: 'Ambience Mall',
+  subtitle: 'National Highway 8, Gurugram',
+  address: 'Ambience Mall, NH-8, Gurugram, Haryana 122002',
+  latitude: 28.5055,
+  longitude: 77.0969,
+  type: 'popular',
+};
+
+export const IGI_AIRPORT: LocationPoint = {
+  id: 'loc-igi',
+  title: 'IGI Airport',
+  subtitle: 'Indira Gandhi International Airport',
+  address: 'Indira Gandhi International Airport, New Delhi 110037',
+  latitude: 28.5562,
+  longitude: 77.1,
+  type: 'airport',
+};
+
 export const POPULAR_DESTINATIONS: LocationPoint[] = [
+  DLF_CYBER_CITY,
+  AMBIENCE_MALL,
+  IGI_AIRPORT,
+  SAHARA_MALL,
+  KINGDOM_OF_DREAMS,
+  ARAVALLI_PARK,
+  MG_ROAD_METRO,
   {
     id: 'loc-bkc',
     title: 'Bandra Kurla Complex (BKC)',

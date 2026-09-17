@@ -1,9 +1,12 @@
+import type { ImageSourcePropType } from 'react-native';
+
 export type RideStatus =
   | 'IDLE'
   | 'SELECTING_LOCATION'
   | 'SELECTING_VEHICLE'
   | 'SEARCHING_DRIVER'
   | 'DRIVER_ASSIGNED'
+  | 'DRIVER_ARRIVING'
   | 'DRIVER_ARRIVED'
   | 'RIDE_IN_PROGRESS'
   | 'RIDE_COMPLETED'
@@ -19,11 +22,14 @@ export interface LocationPoint {
   type?: 'home' | 'work' | 'recent' | 'airport' | 'popular' | 'custom';
 }
 
+export type RideGroup = 'bike' | 'auto' | 'cab';
+
 export interface VehicleOption {
   id: string;
   name: string;
   tagline: string;
-  category: 'mini' | 'sedan' | 'suv' | 'moto' | 'auto';
+  group: RideGroup;
+  category: 'mini' | 'premium' | 'suv' | 'moto' | 'auto';
   capacity: number;
   basePrice: number;
   price: number;
@@ -31,6 +37,7 @@ export interface VehicleOption {
   badge?: string;
   badgeColor?: string;
   iconName: string;
+  imageUrl?: ImageSourcePropType;
 }
 
 export interface DriverInfo {
@@ -43,6 +50,8 @@ export interface DriverInfo {
   carModel: string;
   carColor: string;
   carNumber: string;
+  carCategory?: string;
+  carImageUrl?: string;
   coordinates: {
     latitude: number;
     longitude: number;

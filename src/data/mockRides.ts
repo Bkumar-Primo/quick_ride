@@ -1,15 +1,21 @@
 import type { ActiveRide } from '../types';
-import { MOCK_DRIVERS } from './mockDrivers';
-import { CURRENT_LOCATION, POPULAR_DESTINATIONS } from './mockLocations';
-import { MOCK_VEHICLES } from './mockVehicles';
+import { getDriverById } from './mockDrivers';
+import {
+  AMBIENCE_MALL,
+  CURRENT_LOCATION,
+  DLF_CYBER_CITY,
+  GURUGRAM_HOME,
+  IGI_AIRPORT,
+} from './mockLocations';
+import { getVehicleById } from './mockVehicles';
 
 export const MOCK_RIDE_HISTORY: ActiveRide[] = [
   {
     id: 'ride-hist-101',
     pickup: CURRENT_LOCATION,
-    destination: POPULAR_DESTINATIONS[0], // BKC
-    vehicle: MOCK_VEHICLES[1], // Prime Sedan
-    driver: MOCK_DRIVERS[0], // Rahul Sharma
+    destination: DLF_CYBER_CITY,
+    vehicle: getVehicleById('veh-comfort'),
+    driver: getDriverById('drv-01'),
     otpPin: '4821',
     status: 'RIDE_COMPLETED',
     distanceKm: 14.8,
@@ -29,10 +35,10 @@ export const MOCK_RIDE_HISTORY: ActiveRide[] = [
   },
   {
     id: 'ride-hist-102',
-    pickup: POPULAR_DESTINATIONS[1], // Airport
-    destination: POPULAR_DESTINATIONS[5], // Home
-    vehicle: MOCK_VEHICLES[0], // Mini
-    driver: MOCK_DRIVERS[1], // Vikram Singh
+    pickup: IGI_AIRPORT,
+    destination: GURUGRAM_HOME,
+    vehicle: getVehicleById('veh-quick'),
+    driver: getDriverById('drv-02'),
     otpPin: '1904',
     status: 'RIDE_COMPLETED',
     distanceKm: 18.2,
@@ -51,10 +57,10 @@ export const MOCK_RIDE_HISTORY: ActiveRide[] = [
   },
   {
     id: 'ride-hist-103',
-    pickup: POPULAR_DESTINATIONS[2], // Powai
+    pickup: AMBIENCE_MALL,
     destination: CURRENT_LOCATION,
-    vehicle: MOCK_VEHICLES[3], // Moto
-    driver: MOCK_DRIVERS[2], // Amit Patel
+    vehicle: getVehicleById('veh-bike'),
+    driver: getDriverById('drv-bike'),
     otpPin: '6712',
     status: 'RIDE_COMPLETED',
     distanceKm: 8.5,
@@ -74,9 +80,9 @@ export const MOCK_RIDE_HISTORY: ActiveRide[] = [
   {
     id: 'ride-hist-104',
     pickup: CURRENT_LOCATION,
-    destination: POPULAR_DESTINATIONS[3], // Juhu Beach
-    vehicle: MOCK_VEHICLES[2], // XL SUV
-    driver: MOCK_DRIVERS[0],
+    destination: DLF_CYBER_CITY,
+    vehicle: getVehicleById('veh-xl'),
+    driver: getDriverById('drv-01'),
     otpPin: '8201',
     status: 'CANCELLED',
     distanceKm: 11.0,

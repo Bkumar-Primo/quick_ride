@@ -43,6 +43,15 @@ export const WalletScreen: React.FC<any> = ({ navigation }) => {
     <View style={styles.container}>
       {/* Header with Notch Protection */}
       <View style={[styles.header, { paddingTop: insets.top + 6 }]}>
+        {navigation.canGoBack?.() ? (
+          <TouchableOpacity
+            activeOpacity={0.8}
+            onPress={() => navigation.goBack()}
+            style={styles.backBtn}
+          >
+            <Ionicons name="arrow-back" size={22} color={Colors.textPrimary} />
+          </TouchableOpacity>
+        ) : null}
         <Text style={styles.headerTitle}>Wallet & Offers</Text>
         <Text style={styles.headerSubtitle}>Manage funds, payment methods & discounts</Text>
       </View>
@@ -163,6 +172,15 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.white,
     borderBottomWidth: 1,
     borderBottomColor: Colors.gray100,
+  },
+  backBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: Colors.gray100,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 8,
   },
   headerTitle: {
     fontSize: 22,

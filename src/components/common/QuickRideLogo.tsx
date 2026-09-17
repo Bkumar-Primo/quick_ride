@@ -6,7 +6,7 @@ const masterLogo = require('../../assets/images/logo.png');
 const logoIcon = require('../../assets/images/logo_icon.png');
 
 interface QuickRideLogoProps {
-  size?: 'sm' | 'md' | 'lg';
+  size?: 'xs' | 'sm' | 'md' | 'lg';
   showIconOnly?: boolean;
   showTagline?: boolean;
   style?: ViewStyle;
@@ -20,6 +20,8 @@ export const QuickRideLogo: React.FC<QuickRideLogoProps> = ({
 }) => {
   const getDimensions = () => {
     switch (size) {
+      case 'xs':
+        return { logoWidth: 108, logoHeight: 30, iconSize: 26, taglineSize: 7 };
       case 'sm':
         return { logoWidth: 120, logoHeight: 33, iconSize: 32, taglineSize: 8 };
       case 'lg':

@@ -95,7 +95,7 @@ export const CarVisual: React.FC<CarVisualProps> = ({ height = 230 }) => {
           strokeLinecap="round"
         />
 
-        {/* --- SLEEK QUICKRIDE SEDAN CAR (Angled 3/4 Side View) --- */}
+        {/* --- SLEEK QUICKRIDE premium CAR (Angled 3/4 Side View) --- */}
         <G transform="translate(145, 125)">
           {/* Ground Shadow */}
           <Ellipse cx="75" cy="74" rx="86" ry="9" fill="#1E2430" opacity="0.35" />

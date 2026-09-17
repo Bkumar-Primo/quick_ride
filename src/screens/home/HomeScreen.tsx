@@ -1,24 +1,85 @@
 import { Ionicons } from '@expo/vector-icons';
-import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type React from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Avatar } from '../../components/common/Avatar';
-import { SimulatedMap } from '../../components/map/SimulatedMap';
+import { QuickRideLogo } from '../../components/common/QuickRideLogo';
+import { HomeExploreMap } from '../../components/map/HomeExploreMap';
 import { Colors } from '../../constants/colors';
 import { Layout } from '../../constants/layout';
-import { POPULAR_DESTINATIONS } from '../../data';
-import { RootStackParamList } from '../../navigation/types';
+import { AMBIENCE_MALL, DLF_CYBER_CITY, GURUGRAM_HOME, IGI_AIRPORT } from '../../data';
 import { useRideStore } from '../../store/rideStore';
 import { useUserStore } from '../../store/userStore';
+import type { LocationPoint } from '../../types';
 
-type Props = any; // Stack or Tab navigation
+type Props = any;
 
-const RIDE_CATEGORIES = [
-  { id: 'cat-1', title: 'Daily Ride', icon: 'car-sport', color: '#FF6B00' },
-  { id: 'cat-2', title: 'Rental', icon: 'time', color: '#3B82F6' },
-  { id: 'cat-3', title: 'Outstation', icon: 'trail-sign', color: '#10B981' },
-  { id: 'cat-4', title: 'Reserve', icon: 'calendar', color: '#8B5CF6' },
+const SHORTCUTS: {
+  id: string;
+  label: string;
+  subtitle: string;
+  icon: keyof typeof Ionicons.glyphMap;
+  location: LocationPoint;
+}[] = [
+  {
+    id: 'home',
+    label: 'Home',
+    subtitle: 'Sector 56',
+    icon: 'home-outline',
+    location: GURUGRAM_HOME,
+  },
+  {
+    id: 'work',
+    label: 'Work',
+    subtitle: 'DLF Cyber City',
+    icon: 'briefcase-outline',
+    location: DLF_CYBER_CITY,
+  },
+  {
+    id: 'recent',
+    label: 'Recent',
+    subtitle: 'Ambience Mall',
+    icon: 'star',
+    location: AMBIENCE_MALL,
+  },
+];
+
+const POPULAR_NEARBY: {
+  id: string;
+  title: string;
+  meta: string;
+  icon: keyof typeof Ionicons.glyphMap;
+  iconBg: string;
+  iconColor: string;
+  location: LocationPoint;
+}[] = [
+  {
+    id: 'cyber',
+    title: 'DLF Cyber City',
+    meta: '12 km · 25 min',
+    icon: 'business',
+    iconBg: '#EEF3FF',
+    iconColor: '#5B8DEF',
+    location: DLF_CYBER_CITY,
+  },
+  {
+    id: 'ambience',
+    title: 'Ambience Mall',
+    meta: '8 km · 18 min',
+    icon: 'bag',
+    iconBg: '#FFF3E8',
+    iconColor: Colors.primary,
+    location: AMBIENCE_MALL,
+  },
+  {
+    id: 'airport',
+    title: 'IGI Airport',
+    meta: '14 km · 28 min',
+    icon: 'airplane',
+    iconBg: '#EEF6FF',
+    iconColor: '#3B82F6',
+    location: IGI_AIRPORT,
+  },
 ];
 
 export const HomeScreen: React.FC<Props> = ({ navigation }) => {
@@ -26,166 +87,136 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
   const user = useUserStore((state) => state.user);
   const pickup = useRideStore((state) => state.pickup);
   const setDestination = useRideStore((state) => state.setDestination);
+  const firstName = user.name.split(' ')[0];
 
-  const handleDestinationPress = (dest: any) => {
+  const handleDestinationPress = (dest: LocationPoint) => {
     setDestination(dest);
-    navigation.navigate('VehicleSelect');
+    navigation.navigate('RoutePreview');
   };
 
   const handleSearchPress = () => {
     navigation.navigate('LocationSearch');
   };
 
+  const handleChangePickup = () => {
+    navigation.navigate('PickupConfirm');
+  };
+
   return (
     <View style={styles.container}>
-      {/* Top Header with User Greeting and Notification protected from notch */}
-      <View style={[styles.topHeader, { paddingTop: insets.top + 6 }]}>
-        <View style={styles.userGreeting}>
-          <Avatar name={user.name} size={40} />
-          <View>
-            <Text style={styles.greetingText}>Good day,</Text>
-            <Text style={styles.userName}>{user.name}</Text>
+      <HomeExploreMap />
+
+      <View style={styles.overlay} pointerEvents="box-none">
+        <View style={[styles.topRow, { paddingTop: insets.top + 8 }]} pointerEvents="box-none">
+          <View style={styles.greetingRow}>
+            {/* <Avatar name={user.name} source={user.avatarUrl} size={48} /> */}
+            <View style={styles.greetingTextWrap}>
+              <Text style={styles.helloLine}>
+                <Text style={styles.helloMuted}>Hello, </Text>
+                <Text style={styles.helloName}>{firstName} </Text>
+                <Text>👋</Text>
+              </Text>
+              <Text style={styles.needRide}>Need a ride?</Text>
+            </View>
+          </View>
+
+          <View style={styles.logoCard}>
+            <QuickRideLogo size="xs" />
           </View>
         </View>
 
-        <View style={styles.headerRight}>
-          <View style={styles.walletPill}>
-            <Ionicons name="wallet-outline" size={16} color={Colors.primary} />
-            <Text style={styles.walletText}>₹{user.walletBalance}</Text>
-          </View>
-          <TouchableOpacity
-            activeOpacity={0.7}
-            style={styles.bellBtn}
-            onPress={() => navigation.navigate('ActivityTab')}
-          >
-            <Ionicons name="notifications-outline" size={20} color={Colors.textPrimary} />
-            <View style={styles.notifBadge} />
+        <View style={[styles.mapControls, { top: insets.top + 86 }]}>
+          <TouchableOpacity activeOpacity={0.85} style={styles.mapControlBtn}>
+            <Ionicons name="navigate" size={18} color={Colors.gray700} />
+          </TouchableOpacity>
+          <TouchableOpacity activeOpacity={0.85} style={styles.mapControlBtn}>
+            <Ionicons name="locate-outline" size={20} color={Colors.gray700} />
           </TouchableOpacity>
         </View>
-      </View>
 
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
-        {/* Floating Search Bar */}
-        <TouchableOpacity activeOpacity={0.85} onPress={handleSearchPress} style={styles.searchBar}>
-          <View style={styles.searchIconBg}>
-            <Ionicons name="search" size={20} color={Colors.primary} />
+        <View style={styles.sheet}>
+          <View style={styles.pickupRow}>
+            <View style={styles.pickupPinCol}>
+              <Ionicons name="location" size={20} color={Colors.primary} />
+              <View style={styles.pickupDots}>
+                <View style={styles.pickupDot} />
+                <View style={styles.pickupDot} />
+                <View style={styles.pickupDot} />
+              </View>
+            </View>
+            <View style={styles.pickupInfo}>
+              <Text style={styles.pickupLabel}>Pickup location</Text>
+              <Text style={styles.pickupTitle}>Current location</Text>
+              <Text style={styles.pickupSubtitle} numberOfLines={1}>
+                {pickup.subtitle}
+              </Text>
+            </View>
+            <TouchableOpacity activeOpacity={0.8} onPress={handleChangePickup}>
+              <Text style={styles.changeText}>Change</Text>
+            </TouchableOpacity>
           </View>
-          <View style={styles.searchPlaceholder}>
-            <Text style={styles.searchMainText}>Where to?</Text>
-            <Text style={styles.searchSubText}>Search destination or pickup spot</Text>
-          </View>
-          <View style={styles.nowBadge}>
-            <Ionicons name="time" size={14} color={Colors.gray700} />
-            <Text style={styles.nowText}>Now ⌵</Text>
-          </View>
-        </TouchableOpacity>
 
-        {/* Live Vector Map Simulation */}
-        <View style={styles.mapContainer}>
-          <SimulatedMap
-            height={220}
-            showNearbyDrivers={true}
-            pickupLocation={pickup}
-            onPressMap={handleSearchPress}
-          />
-        </View>
+          <TouchableOpacity
+            activeOpacity={0.9}
+            onPress={handleSearchPress}
+            style={styles.searchBar}
+          >
+            <Ionicons name="search" size={18} color={Colors.primary} />
+            <Text style={styles.searchPlaceholder}>Where are you going?</Text>
+          </TouchableOpacity>
 
-        {/* Quick Destination Pills */}
-        <View style={styles.quickDestinations}>
+          <View style={styles.shortcutsRow}>
+            {SHORTCUTS.map((item) => (
+              <TouchableOpacity
+                key={item.id}
+                activeOpacity={0.8}
+                onPress={() => handleDestinationPress(item.location)}
+                style={styles.shortcutItem}
+              >
+                <Ionicons name={item.icon} size={20} color={Colors.primary} />
+                <View>
+                  <Text style={styles.shortcutLabel}>{item.label}</Text>
+                  <Text style={styles.shortcutSubtitle} numberOfLines={1}>
+                    {item.subtitle}
+                  </Text>
+                </View>
+              </TouchableOpacity>
+            ))}
+          </View>
+
+          <View style={styles.popularHeader}>
+            <Text style={styles.popularTitle}>Popular destinations</Text>
+            <TouchableOpacity activeOpacity={0.8} onPress={handleSearchPress}>
+              <Text style={styles.seeAll}>See all</Text>
+            </TouchableOpacity>
+          </View>
+
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.destScroll}
+            contentContainerStyle={styles.popularScroll}
           >
-            {user.savedPlaces.map((place) => (
+            {POPULAR_NEARBY.map((item) => (
               <TouchableOpacity
-                key={place.id}
-                activeOpacity={0.8}
-                onPress={() => handleDestinationPress(place)}
-                style={styles.destPill}
+                key={item.id}
+                activeOpacity={0.85}
+                onPress={() => handleDestinationPress(item.location)}
+                style={styles.popularCard}
               >
-                <View style={styles.destIconBg}>
-                  <Ionicons
-                    name={
-                      place.type === 'home'
-                        ? 'home'
-                        : place.type === 'work'
-                          ? 'briefcase'
-                          : place.type === 'airport'
-                            ? 'airplane'
-                            : 'location'
-                    }
-                    size={16}
-                    color={Colors.primary}
-                  />
+                <View style={[styles.popularIcon, { backgroundColor: item.iconBg }]}>
+                  <Ionicons name={item.icon} size={16} color={item.iconColor} />
                 </View>
-                <Text style={styles.destTitle} numberOfLines={1}>
-                  {place.title.split(' ')[0]}
-                </Text>
+                <View style={styles.popularCopy}>
+                  <Text style={styles.popularName} numberOfLines={1}>
+                    {item.title}
+                  </Text>
+                  <Text style={styles.popularMeta}>{item.meta}</Text>
+                </View>
               </TouchableOpacity>
             ))}
           </ScrollView>
         </View>
-
-        {/* Ride Category Cards */}
-        <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>Ride Options</Text>
-        </View>
-        <View style={styles.categoriesGrid}>
-          {RIDE_CATEGORIES.map((cat) => (
-            <TouchableOpacity
-              key={cat.id}
-              activeOpacity={0.8}
-              onPress={handleSearchPress}
-              style={styles.categoryCard}
-            >
-              <View style={[styles.catIconBg, { backgroundColor: `${cat.color}15` }]}>
-                <Ionicons name={cat.icon as any} size={24} color={cat.color} />
-              </View>
-              <Text style={styles.catTitle}>{cat.title}</Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-
-        {/* Special Promo Banner */}
-        <TouchableOpacity
-          activeOpacity={0.85}
-          onPress={handleSearchPress}
-          style={styles.promoBanner}
-        >
-          <View style={styles.promoLeft}>
-            <View style={styles.promoBadge}>
-              <Text style={styles.promoBadgeText}>LIMITED OFFER</Text>
-            </View>
-            <Text style={styles.promoHeading}>20% OFF on all Prime Rides</Text>
-            <Text style={styles.promoSub}>Use promo code QUICK50 at checkout</Text>
-          </View>
-          <View style={styles.promoIconContainer}>
-            <Ionicons name="gift" size={32} color={Colors.primary} />
-          </View>
-        </TouchableOpacity>
-
-        {/* Recent Ride Card */}
-        <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>Recent Destination</Text>
-        </View>
-        <TouchableOpacity
-          activeOpacity={0.8}
-          onPress={() => handleDestinationPress(POPULAR_DESTINATIONS[0])}
-          style={styles.recentCard}
-        >
-          <View style={styles.recentIconContainer}>
-            <Ionicons name="time-outline" size={20} color={Colors.gray600} />
-          </View>
-          <View style={styles.recentInfo}>
-            <Text style={styles.recentTitle}>{POPULAR_DESTINATIONS[0].title}</Text>
-            <Text style={styles.recentSubtitle} numberOfLines={1}>
-              {POPULAR_DESTINATIONS[0].subtitle}
-            </Text>
-          </View>
-          <Ionicons name="chevron-forward" size={18} color={Colors.gray400} />
-        </TouchableOpacity>
-      </ScrollView>
+      </View>
     </View>
   );
 };
@@ -193,284 +224,218 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F8FAFC',
+    backgroundColor: Colors.white,
   },
-  topHeader: {
+  overlay: {
+    position: 'absolute',
+    top: 0,
+    right: 0,
+    bottom: 0,
+    left: 0,
+    justifyContent: 'space-between',
+    zIndex: 1,
+  },
+  topRow: {
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     justifyContent: 'space-between',
     paddingHorizontal: Layout.spacing.lg,
-    paddingTop: Layout.spacing.sm,
-    paddingBottom: Layout.spacing.md,
-    backgroundColor: Colors.white,
-    borderBottomWidth: 1,
-    borderBottomColor: Colors.gray100,
   },
-  userGreeting: {
+  greetingRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: Layout.spacing.md,
+    gap: 10,
+    flex: 1,
+    paddingRight: 8,
+    flexShrink: 1,
+    marginTop: -8,
   },
-  userAvatar: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    borderWidth: 2,
-    borderColor: Colors.primary,
+  greetingTextWrap: {
+    flexShrink: 1,
+    backgroundColor: 'white',
+    borderRadius: 16,
+    padding: 8,
   },
-  greetingText: {
-    fontSize: 12,
+  helloLine: {
+    fontSize: 18,
+    lineHeight: 24,
+  },
+  helloMuted: {
+    color: Colors.gray600,
+    fontWeight: '500',
+  },
+  helloName: {
+    color: Colors.textPrimary,
+    fontWeight: '800',
+  },
+  needRide: {
+    marginTop: 1,
+    fontSize: 13,
     color: Colors.gray500,
   },
-  userName: {
+  logoCard: {
+    backgroundColor: Colors.white,
+    borderRadius: 16,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    ...Layout.shadows.md,
+  },
+  mapControls: {
+    position: 'absolute',
+    right: Layout.spacing.lg,
+    gap: 10,
+  },
+  mapControlBtn: {
+    width: 44,
+    height: 44,
+    borderRadius: 12,
+    backgroundColor: Colors.white,
+    alignItems: 'center',
+    justifyContent: 'center',
+    ...Layout.shadows.md,
+  },
+  sheet: {
+    marginHorizontal: 12,
+    marginBottom: 8,
+    backgroundColor: Colors.white,
+    borderRadius: 28,
+    paddingHorizontal: 18,
+    paddingTop: 18,
+    paddingBottom: 16,
+    ...Layout.shadows.lg,
+  },
+  pickupRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+  },
+  pickupPinCol: {
+    width: 22,
+    alignItems: 'center',
+    marginTop: 14,
+    marginRight: 10,
+  },
+  pickupDots: {
+    marginTop: 4,
+    alignItems: 'center',
+    gap: 3,
+  },
+  pickupDot: {
+    width: 3,
+    height: 3,
+    borderRadius: 1.5,
+    backgroundColor: Colors.gray300,
+  },
+  pickupInfo: {
+    flex: 1,
+  },
+  pickupLabel: {
+    fontSize: 11,
+    color: Colors.gray500,
+    marginBottom: 2,
+  },
+  pickupTitle: {
     fontSize: 16,
     fontWeight: '800',
     color: Colors.textPrimary,
   },
-  headerRight: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Layout.spacing.sm,
-  },
-  walletPill: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#FFF3E8',
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: Layout.borderRadius.full,
-    gap: 4,
-  },
-  walletText: {
+  pickupSubtitle: {
     fontSize: 13,
+    color: Colors.gray500,
+    marginTop: 1,
+  },
+  changeText: {
+    fontSize: 14,
     fontWeight: '700',
     color: Colors.primary,
-  },
-  bellBtn: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: Colors.gray100,
-    alignItems: 'center',
-    justifyContent: 'center',
-    position: 'relative',
-  },
-  notifBadge: {
-    position: 'absolute',
-    top: 8,
-    right: 8,
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: Colors.primary,
-  },
-  scrollContent: {
-    paddingBottom: Layout.spacing.xxl,
+    marginTop: 18,
   },
   searchBar: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: Colors.white,
-    marginHorizontal: Layout.spacing.lg,
-    marginTop: Layout.spacing.md,
-    marginBottom: Layout.spacing.sm,
-    padding: Layout.spacing.md,
-    borderRadius: Layout.borderRadius.xl,
-    ...Layout.shadows.md,
-    borderWidth: 1,
-    borderColor: Colors.gray200,
-  },
-  searchIconBg: {
-    width: 42,
-    height: 42,
-    borderRadius: 21,
     backgroundColor: '#FFF3E8',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: Layout.spacing.md,
+    borderRadius: 18,
+    paddingHorizontal: 14,
+    paddingVertical: 14,
+    marginTop: 12,
+    gap: 10,
   },
   searchPlaceholder: {
-    flex: 1,
-  },
-  searchMainText: {
     fontSize: 16,
-    fontWeight: '700',
-    color: Colors.textPrimary,
-  },
-  searchSubText: {
-    fontSize: 12,
-    color: Colors.gray500,
-    marginTop: 2,
-  },
-  nowBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: Colors.gray100,
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: Layout.borderRadius.full,
-    gap: 4,
-  },
-  nowText: {
-    fontSize: 12,
     fontWeight: '600',
-    color: Colors.gray700,
+    color: '#F3B48A',
   },
-  mapContainer: {
-    marginHorizontal: Layout.spacing.lg,
-    marginVertical: Layout.spacing.sm,
-    borderRadius: Layout.borderRadius.xl,
-    overflow: 'hidden',
-    borderWidth: 1,
-    borderColor: Colors.gray200,
-    ...Layout.shadows.sm,
-  },
-  quickDestinations: {
-    marginVertical: Layout.spacing.sm,
-  },
-  destScroll: {
-    paddingHorizontal: Layout.spacing.lg,
-    gap: Layout.spacing.sm,
-  },
-  destPill: {
+  shortcutsRow: {
     flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: Colors.white,
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    borderRadius: Layout.borderRadius.full,
-    borderWidth: 1,
-    borderColor: Colors.gray200,
-    gap: 8,
-    ...Layout.shadows.sm,
-  },
-  destIconBg: {
-    width: 26,
-    height: 26,
-    borderRadius: 13,
-    backgroundColor: '#FFF3E8',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  destTitle: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: Colors.textPrimary,
-  },
-  sectionHeader: {
-    paddingHorizontal: Layout.spacing.lg,
-    marginTop: Layout.spacing.md,
-    marginBottom: Layout.spacing.sm,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: '800',
-    color: Colors.textPrimary,
-  },
-  categoriesGrid: {
-    flexDirection: 'row',
-    paddingHorizontal: Layout.spacing.lg,
-    gap: Layout.spacing.sm,
-  },
-  categoryCard: {
-    flex: 1,
-    backgroundColor: Colors.white,
-    borderRadius: Layout.borderRadius.lg,
-    paddingVertical: Layout.spacing.md,
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: Colors.gray200,
-    ...Layout.shadows.sm,
-  },
-  catIconBg: {
-    width: 46,
-    height: 46,
-    borderRadius: 23,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: Layout.spacing.xs,
-  },
-  catTitle: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: Colors.textPrimary,
-  },
-  promoBanner: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    backgroundColor: '#1E2430',
-    marginHorizontal: Layout.spacing.lg,
-    marginTop: Layout.spacing.lg,
-    padding: Layout.spacing.lg,
-    borderRadius: Layout.borderRadius.xl,
-    ...Layout.shadows.md,
-  },
-  promoLeft: {
-    flex: 1,
-  },
-  promoBadge: {
-    alignSelf: 'flex-start',
-    backgroundColor: Colors.primary,
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 4,
+    marginTop: 18,
     marginBottom: 6,
   },
-  promoBadgeText: {
-    fontSize: 10,
-    fontWeight: '800',
-    color: Colors.white,
-  },
-  promoHeading: {
-    fontSize: 15,
-    fontWeight: '700',
-    color: Colors.white,
-  },
-  promoSub: {
-    fontSize: 12,
-    color: Colors.gray300,
-    marginTop: 2,
-  },
-  promoIconContainer: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: '#2D3546',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginLeft: Layout.spacing.md,
-  },
-  recentCard: {
+  shortcutItem: {
+    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: Colors.white,
-    marginHorizontal: Layout.spacing.lg,
-    padding: Layout.spacing.md,
-    borderRadius: Layout.borderRadius.lg,
-    borderWidth: 1,
-    borderColor: Colors.gray200,
-    ...Layout.shadows.sm,
+    gap: 8,
   },
-  recentIconContainer: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: Colors.gray100,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: Layout.spacing.md,
-  },
-  recentInfo: {
-    flex: 1,
-  },
-  recentTitle: {
+  shortcutLabel: {
     fontSize: 14,
     fontWeight: '700',
     color: Colors.textPrimary,
   },
-  recentSubtitle: {
-    fontSize: 12,
+  shortcutSubtitle: {
+    fontSize: 11,
+    color: Colors.gray500,
+    marginTop: 1,
+    maxWidth: 88,
+  },
+  popularHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginTop: 16,
+    marginBottom: 10,
+  },
+  popularTitle: {
+    fontSize: 16,
+    fontWeight: '800',
+    color: Colors.textPrimary,
+  },
+  seeAll: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: Colors.primary,
+  },
+  popularScroll: {
+    gap: 10,
+    paddingRight: 4,
+  },
+  popularCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: Colors.white,
+    borderWidth: 1,
+    borderColor: Colors.gray100,
+    borderRadius: 16,
+    paddingVertical: 10,
+    paddingHorizontal: 10,
+    gap: 8,
+    minWidth: 168,
+  },
+  popularIcon: {
+    width: 36,
+    height: 36,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  popularCopy: {
+    flexShrink: 1,
+  },
+  popularName: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: Colors.textPrimary,
+  },
+  popularMeta: {
+    fontSize: 11,
     color: Colors.gray500,
     marginTop: 2,
   },

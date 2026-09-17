@@ -1,376 +1,174 @@
 import { Ionicons } from '@expo/vector-icons';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type React from 'react';
-import { useState } from 'react';
-import { SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Alert, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Avatar } from '../../components/common/Avatar';
-import { Button } from '../../components/common/Button';
+import { BookingMap } from '../../components/map/BookingMap';
+import { DriverRidePanel } from '../../components/ride/DriverRidePanel';
+import {
+  PrimaryPillButton,
+  RideSheet,
+  RoundIconButton,
+  SoftPillButton,
+} from '../../components/ride/RideChrome';
 import { Colors } from '../../constants/colors';
-import { Layout } from '../../constants/layout';
 import type { RootStackParamList } from '../../navigation/types';
 import { useRideStore } from '../../store/rideStore';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'RideCompleted'>;
 
-const FEEDBACK_TAGS = [
-  'Clean & Fresh Car',
-  'Polite Driver',
-  'Smooth Driving',
-  'Great Music',
-  'Fast Route',
-];
-
-const TIP_OPTIONS = [0, 20, 50, 100];
-
 export const RideCompletedScreen: React.FC<Props> = ({ navigation }) => {
   const insets = useSafeAreaInsets();
   const activeRide = useRideStore((state) => state.activeRide);
   const resetRide = useRideStore((state) => state.resetRide);
-
-  const [rating, setRating] = useState(5);
-  const [selectedTip, setSelectedTip] = useState(20);
-  const [selectedTags, setSelectedTags] = useState<string[]>([
-    'Clean & Fresh Car',
-    'Polite Driver',
-  ]);
-
   const driver = activeRide?.driver;
-  const fare = activeRide?.fareBreakdown || {
-    baseFare: 180,
-    distanceFare: 118,
-    tax: 15,
-    discount: 34,
-    totalFare: 279,
-  };
+  const fare = activeRide?.fareBreakdown;
 
-  const toggleTag = (tag: string) => {
-    if (selectedTags.includes(tag)) {
-      setSelectedTags(selectedTags.filter((t) => t !== tag));
-    } else {
-      setSelectedTags([...selectedTags, tag]);
-    }
-  };
-
-  const handleDone = () => {
+  const done = () => {
     resetRide();
-    navigation.navigate('MainTabs', { screen: 'RideTab' });
+    navigation.navigate('MainTabs', { screen: 'HomeTab' });
   };
 
   return (
     <View style={styles.container}>
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={[styles.scrollContent, { paddingTop: insets.top + 12 }]}
-      >
-        {/* Success Arrival Icon Header */}
-        <View style={styles.header}>
-          <View style={styles.successIconCircle}>
-            <Ionicons name="checkmark-circle" size={48} color="#10B981" />
+      <BookingMap mode="completed" />
+      <View style={[styles.hero, { paddingTop: insets.top + 8 }]}>
+        <RoundIconButton icon="close" onPress={done} />
+        <View style={styles.heroCopy}>
+          <View style={styles.check}>
+            <Ionicons name="checkmark" size={28} color={Colors.white} />
           </View>
-          <Text style={styles.title}>You've Arrived!</Text>
-          <Text style={styles.subtitle}>
-            Thanks for riding with QuickRide. Hope you had a smooth journey!
-          </Text>
+          <Text style={styles.heroTitle}>You’ve arrived!</Text>
+          <Text style={styles.heroSub}>Thanks for riding with us 🙏</Text>
+          <View style={styles.safer}>
+            <Text style={styles.saferText}>A safer, smarter tomorrow</Text>
+          </View>
         </View>
+      </View>
 
-        {/* Fare Summary Receipt Card */}
-        <View style={styles.fareCard}>
-          <View style={styles.totalRow}>
-            <View>
-              <Text style={styles.totalLabel}>Total Fare Paid</Text>
-              <Text style={styles.paidMethod}>via QuickRide Wallet</Text>
-            </View>
-            <Text style={styles.totalAmount}>₹{fare.totalFare + selectedTip}</Text>
+      <RideSheet>
+        <View style={styles.summaryHead}>
+          <View>
+            <Text style={styles.title}>Trip summary</Text>
+            <Text style={styles.sub}>Tue, 16 Sep 2025 · 9:12 AM – 9:49 AM</Text>
           </View>
-
-          <View style={styles.divider} />
-
-          <View style={styles.breakdownList}>
-            <View style={styles.breakdownRow}>
-              <Text style={styles.breakdownLabel}>Base Fare</Text>
-              <Text style={styles.breakdownVal}>₹{fare.baseFare}</Text>
-            </View>
-            <View style={styles.breakdownRow}>
-              <Text style={styles.breakdownLabel}>Distance Fare (14.8 km)</Text>
-              <Text style={styles.breakdownVal}>₹{fare.distanceFare}</Text>
-            </View>
-            <View style={styles.breakdownRow}>
-              <Text style={styles.breakdownLabel}>Taxes & Fees</Text>
-              <Text style={styles.breakdownVal}>₹{fare.tax}</Text>
-            </View>
-            {fare.discount > 0 && (
-              <View style={styles.breakdownRow}>
-                <Text style={[styles.breakdownLabel, { color: '#10B981' }]}>
-                  Promo Discount (QUICK50)
-                </Text>
-                <Text style={[styles.breakdownVal, { color: '#10B981' }]}>-₹{fare.discount}</Text>
-              </View>
-            )}
-            {selectedTip > 0 && (
-              <View style={styles.breakdownRow}>
-                <Text style={styles.breakdownLabel}>Driver Tip</Text>
-                <Text style={styles.breakdownVal}>₹{selectedTip}</Text>
-              </View>
-            )}
+          <View style={styles.fareBox}>
+            <Text style={styles.fareVal}>₹{fare?.totalFare ?? 328}</Text>
+            <Text style={styles.fareLabel}>Final fare</Text>
           </View>
         </View>
 
-        {/* Rating & Review Section */}
-        <View style={styles.ratingCard}>
-          <Text style={styles.ratingCardTitle}>Rate your ride with {driver?.name || 'Rahul'}</Text>
-          <Avatar name={driver?.name || 'Rahul'} size={60} style={styles.driverAvatar} />
-
-          {/* 5 Stars */}
-          <View style={styles.starsRow}>
-            {[1, 2, 3, 4, 5].map((star) => (
-              <TouchableOpacity
-                key={star}
-                activeOpacity={0.7}
-                onPress={() => setRating(star)}
-                style={styles.starBtn}
-              >
-                <Ionicons
-                  name={star <= rating ? 'star' : 'star-outline'}
-                  size={36}
-                  color="#F59E0B"
-                />
-              </TouchableOpacity>
-            ))}
+        <View style={styles.route}>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.pinLabel}>Pickup</Text>
+            <Text style={styles.place}>{activeRide?.pickup.title}</Text>
+            <Text style={styles.city}>Gurugram, Haryana</Text>
           </View>
-
-          {/* Feedback Badges */}
-          <Text style={styles.sectionSubTitle}>What made your ride great?</Text>
-          <View style={styles.tagsContainer}>
-            {FEEDBACK_TAGS.map((tag) => {
-              const isSelected = selectedTags.includes(tag);
-              return (
-                <TouchableOpacity
-                  key={tag}
-                  activeOpacity={0.8}
-                  onPress={() => toggleTag(tag)}
-                  style={[styles.tagPill, isSelected && styles.tagPillSelected]}
-                >
-                  <Text style={[styles.tagText, isSelected && styles.tagTextSelected]}>
-                    {isSelected ? '✓ ' : '+ '}
-                    {tag}
-                  </Text>
-                </TouchableOpacity>
-              );
-            })}
+          <Text style={styles.time}>9:12 AM</Text>
+        </View>
+        <View style={styles.route}>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.pinLabel}>Destination</Text>
+            <Text style={styles.place}>{activeRide?.destination.title}</Text>
+            <Text style={styles.city}>Gurugram, Haryana</Text>
           </View>
+          <Text style={styles.time}>9:49 AM</Text>
+        </View>
 
-          {/* Tip Options */}
-          <Text style={styles.sectionSubTitle}>Add a tip for captain</Text>
-          <View style={styles.tipRow}>
-            {TIP_OPTIONS.map((tip) => {
-              const isSelected = selectedTip === tip;
-              return (
-                <TouchableOpacity
-                  key={tip}
-                  activeOpacity={0.8}
-                  onPress={() => setSelectedTip(tip)}
-                  style={[styles.tipBtn, isSelected && styles.tipBtnSelected]}
-                >
-                  <Text style={[styles.tipBtnText, isSelected && styles.tipBtnTextSelected]}>
-                    {tip === 0 ? 'No tip' : `₹${tip}`}
-                  </Text>
-                </TouchableOpacity>
-              );
-            })}
+        <View style={styles.metrics}>
+          <View>
+            <Text style={styles.metricVal}>{activeRide?.distanceKm ?? 12.6} km</Text>
+            <Text style={styles.metricLabel}>Distance</Text>
+          </View>
+          <View>
+            <Text style={styles.metricVal}>37 min</Text>
+            <Text style={styles.metricLabel}>Duration</Text>
+          </View>
+          <View>
+            <Text style={styles.metricVal}>20 km/h</Text>
+            <Text style={styles.metricLabel}>Avg. speed</Text>
           </View>
         </View>
 
-        {/* Bottom Back to Home Button */}
-        <Button title="Done • Back to Home" onPress={handleDone} showArrow style={styles.doneBtn} />
-      </ScrollView>
+        {driver ? <DriverRidePanel driver={driver} vehicle={activeRide?.vehicle} /> : null}
+
+        <Text style={styles.fareTitle}>Fare details</Text>
+        <View style={styles.fareRow}>
+          <Text style={styles.fareItem}>Base fare</Text>
+          <Text style={styles.fareItemVal}>₹{fare?.baseFare ?? 280}</Text>
+        </View>
+        <View style={styles.fareRow}>
+          <Text style={styles.fareItem}>Time & distance</Text>
+          <Text style={styles.fareItemVal}>₹{fare?.distanceFare ?? 48}</Text>
+        </View>
+        <View style={styles.fareRow}>
+          <Text style={styles.total}>Total paid</Text>
+          <Text style={styles.totalVal}>₹{fare?.totalFare ?? 328}</Text>
+        </View>
+
+        <View style={styles.actions}>
+          <SoftPillButton
+            title="View receipt"
+            onPress={() => Alert.alert('Receipt', 'Receipt will be emailed to you.')}
+            style={{ flex: 1 }}
+          />
+          <PrimaryPillButton title="Done" onPress={done} style={{ flex: 1 }} />
+        </View>
+      </RideSheet>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#F8FAFC',
-  },
-  scrollContent: {
-    padding: Layout.spacing.lg,
-    paddingBottom: Layout.spacing.xxxl,
-  },
-  header: {
-    alignItems: 'center',
-    marginVertical: Layout.spacing.md,
-  },
-  successIconCircle: {
-    width: 72,
-    height: 72,
-    borderRadius: 36,
-    backgroundColor: '#DCFCE7',
+  container: { flex: 1, backgroundColor: Colors.white },
+  hero: { paddingHorizontal: 16, paddingBottom: 20 },
+  heroCopy: { alignItems: 'center', marginTop: 8 },
+  check: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: '#22C55E',
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: Layout.spacing.md,
+    marginBottom: 10,
   },
-  title: {
-    fontSize: 24,
-    fontWeight: '800',
-    color: Colors.textPrimary,
+  heroTitle: { fontSize: 24, fontWeight: '800', color: Colors.textPrimary },
+  heroSub: { fontSize: 14, color: Colors.gray600, marginTop: 4 },
+  safer: {
+    marginTop: 8,
+    backgroundColor: '#ECFDF3',
+    borderRadius: 14,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
   },
-  subtitle: {
-    fontSize: 13,
-    color: Colors.gray500,
-    textAlign: 'center',
-    marginTop: 4,
-    paddingHorizontal: Layout.spacing.lg,
-    lineHeight: 18,
-  },
-  fareCard: {
-    backgroundColor: Colors.white,
-    borderRadius: Layout.borderRadius.xl,
-    padding: Layout.spacing.lg,
-    marginVertical: Layout.spacing.md,
-    borderWidth: 1,
-    borderColor: Colors.gray200,
-    ...Layout.shadows.sm,
-  },
-  totalRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  totalLabel: {
-    fontSize: 16,
-    fontWeight: '800',
-    color: Colors.textPrimary,
-  },
-  paidMethod: {
-    fontSize: 12,
-    color: Colors.gray500,
-    marginTop: 2,
-  },
-  totalAmount: {
-    fontSize: 26,
-    fontWeight: '900',
-    color: Colors.primary,
-  },
-  divider: {
-    height: 1,
-    backgroundColor: Colors.gray200,
-    marginVertical: Layout.spacing.md,
-  },
-  breakdownList: {
-    gap: 8,
-  },
-  breakdownRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  breakdownLabel: {
-    fontSize: 13,
-    color: Colors.gray600,
-  },
-  breakdownVal: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: Colors.textPrimary,
-  },
-  ratingCard: {
-    backgroundColor: Colors.white,
-    borderRadius: Layout.borderRadius.xl,
-    padding: Layout.spacing.lg,
-    marginVertical: Layout.spacing.sm,
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: Colors.gray200,
-    ...Layout.shadows.sm,
-  },
-  ratingCardTitle: {
-    fontSize: 16,
-    fontWeight: '800',
-    color: Colors.textPrimary,
-    marginBottom: Layout.spacing.md,
-  },
-  driverAvatar: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    borderWidth: 2,
-    borderColor: Colors.primary,
-    marginBottom: Layout.spacing.sm,
-  },
-  starsRow: {
-    flexDirection: 'row',
-    gap: Layout.spacing.sm,
-    marginVertical: Layout.spacing.sm,
-  },
-  starBtn: {
-    padding: 2,
-  },
-  sectionSubTitle: {
-    fontSize: 13,
+  saferText: { color: '#15803D', fontWeight: '700', fontSize: 12 },
+  summaryHead: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 12 },
+  title: { fontSize: 22, fontWeight: '800', color: Colors.textPrimary },
+  sub: { fontSize: 12, color: Colors.gray500, marginTop: 4 },
+  fareBox: { alignItems: 'flex-end' },
+  fareVal: { fontSize: 22, fontWeight: '800', color: Colors.primary },
+  fareLabel: { fontSize: 11, color: Colors.gray500 },
+  route: { flexDirection: 'row', marginBottom: 8 },
+  pinLabel: { fontSize: 11, color: Colors.gray500 },
+  place: { fontSize: 14, fontWeight: '800', color: Colors.textPrimary },
+  city: { fontSize: 12, color: Colors.gray500 },
+  time: { fontSize: 12, color: Colors.gray500 },
+  metrics: { flexDirection: 'row', justifyContent: 'space-between', marginVertical: 12 },
+  metricVal: { fontSize: 16, fontWeight: '800', color: Colors.textPrimary },
+  metricLabel: { fontSize: 11, color: Colors.gray500 },
+  fareTitle: {
+    fontSize: 14,
     fontWeight: '700',
     color: Colors.textPrimary,
-    alignSelf: 'flex-start',
-    marginTop: Layout.spacing.md,
-    marginBottom: Layout.spacing.sm,
+    marginTop: 12,
+    marginBottom: 8,
   },
-  tagsContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-    width: '100%',
-  },
-  tagPill: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: Layout.borderRadius.full,
-    backgroundColor: Colors.gray100,
-    borderWidth: 1,
-    borderColor: Colors.gray200,
-  },
-  tagPillSelected: {
-    backgroundColor: '#FFF3E8',
-    borderColor: Colors.primary,
-  },
-  tagText: {
-    fontSize: 12,
-    color: Colors.gray700,
-    fontWeight: '500',
-  },
-  tagTextSelected: {
-    color: Colors.primary,
-    fontWeight: '700',
-  },
-  tipRow: {
-    flexDirection: 'row',
-    gap: Layout.spacing.sm,
-    width: '100%',
-  },
-  tipBtn: {
-    flex: 1,
-    paddingVertical: 10,
-    borderRadius: Layout.borderRadius.md,
-    backgroundColor: Colors.gray100,
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: Colors.gray200,
-  },
-  tipBtnSelected: {
-    backgroundColor: Colors.primary,
-    borderColor: Colors.primary,
-  },
-  tipBtnText: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: Colors.textPrimary,
-  },
-  tipBtnTextSelected: {
-    color: Colors.white,
-    fontWeight: '800',
-  },
-  doneBtn: {
-    marginTop: Layout.spacing.lg,
-    width: '100%',
-  },
+  fareRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 6 },
+  fareItem: { color: Colors.gray600 },
+  fareItemVal: { fontWeight: '600', color: Colors.textPrimary },
+  total: { fontWeight: '800', color: Colors.textPrimary },
+  totalVal: { fontWeight: '800', color: Colors.textPrimary },
+  actions: { flexDirection: 'row', gap: 10, marginTop: 16 },
 });
 
 export default RideCompletedScreen;

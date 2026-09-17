@@ -10,21 +10,24 @@ export type AuthStackParamList = {
 };
 
 export type MainTabParamList = {
-  RideTab: undefined;
-  ActivityTab: undefined;
-  WalletTab: undefined;
-  AccountTab: undefined;
+  HomeTab: undefined;
+  RidesTab: undefined;
+  ProfileTab: undefined;
 };
 
 export type RootStackParamList = {
   Auth: NavigatorScreenParams<AuthStackParamList>;
   MainTabs: NavigatorScreenParams<MainTabParamList>;
   LocationSearch: undefined;
+  PickupConfirm: undefined;
+  RoutePreview: undefined;
   VehicleSelect: undefined;
+  BookingConfirm: undefined;
   SearchingDriver: undefined;
   DriverAssigned: undefined;
   ActiveRide: undefined;
   RideCompleted: undefined;
   EditProfile: undefined;
+  Wallet: undefined;
   SavedPlaces: undefined;
 };

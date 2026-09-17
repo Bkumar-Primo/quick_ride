@@ -2,12 +2,16 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import type React from 'react';
 import { ActiveRideScreen } from '../screens/home/ActiveRideScreen';
+import { BookingConfirmScreen } from '../screens/home/BookingConfirmScreen';
 import { DriverAssignedScreen } from '../screens/home/DriverAssignedScreen';
 import { LocationSearchScreen } from '../screens/home/LocationSearchScreen';
+import { PickupConfirmScreen } from '../screens/home/PickupConfirmScreen';
 import { RideCompletedScreen } from '../screens/home/RideCompletedScreen';
+import { RoutePreviewScreen } from '../screens/home/RoutePreviewScreen';
 import { SearchingDriverScreen } from '../screens/home/SearchingDriverScreen';
 import { VehicleSelectScreen } from '../screens/home/VehicleSelectScreen';
 import { EditProfileScreen } from '../screens/profile/EditProfileScreen';
+import { WalletScreen } from '../screens/wallet/WalletScreen';
 import { useAuthStore } from '../store/authStore';
 import { AuthNavigator } from './AuthNavigator';
 import { MainTabNavigator } from './MainTabNavigator';
@@ -39,7 +43,10 @@ export const AppNavigator: React.FC = () => {
               component={LocationSearchScreen}
               options={{ animation: 'fade_from_bottom' }}
             />
+            <RootStack.Screen name="PickupConfirm" component={PickupConfirmScreen} />
+            <RootStack.Screen name="RoutePreview" component={RoutePreviewScreen} />
             <RootStack.Screen name="VehicleSelect" component={VehicleSelectScreen} />
+            <RootStack.Screen name="BookingConfirm" component={BookingConfirmScreen} />
             <RootStack.Screen
               name="SearchingDriver"
               component={SearchingDriverScreen}
@@ -61,6 +68,7 @@ export const AppNavigator: React.FC = () => {
               options={{ gestureEnabled: false }}
             />
             <RootStack.Screen name="EditProfile" component={EditProfileScreen} />
+            <RootStack.Screen name="Wallet" component={WalletScreen} />
           </>
         )}
       </RootStack.Navigator>

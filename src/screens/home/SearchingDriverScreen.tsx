@@ -1,18 +1,10 @@
 import { Ionicons } from '@expo/vector-icons';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type React from 'react';
-import { useEffect, useRef, useState } from 'react';
-import {
-  Animated,
-  Dimensions,
-  SafeAreaView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from 'react-native';
-import { QuickRideLogo } from '../../components/common/QuickRideLogo';
-import { SimulatedMap } from '../../components/map/SimulatedMap';
+import { useEffect } from 'react';
+import { StyleSheet, Text, View } from 'react-native';
+import { BookingMap } from '../../components/map/BookingMap';
+import { MapControlsColumn, RideSheet, SoftPillButton } from '../../components/ride/RideChrome';
 import { Colors } from '../../constants/colors';
 import { Layout } from '../../constants/layout';
 import type { RootStackParamList } from '../../navigation/types';
@@ -20,270 +12,159 @@ import { useRideStore } from '../../store/rideStore';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'SearchingDriver'>;
 
-const SEARCH_STATUSES = [
-  'Broadcasting request to nearby drivers...',
-  'Matching top-rated captain for your ride...',
-  'Confirming driver arrival time...',
+const STEPS = [
+  'Searching\nfor drivers',
+  'Driver\non the way',
+  'Arriving\nsoon',
+  'Trip\nin progress',
 ];
 
 export const SearchingDriverScreen: React.FC<Props> = ({ navigation }) => {
   const currentStatus = useRideStore((state) => state.currentStatus);
   const cancelRide = useRideStore((state) => state.cancelRide);
+  const pickup = useRideStore((state) => state.pickup);
+  const destination = useRideStore((state) => state.destination);
   const selectedVehicle = useRideStore((state) => state.selectedVehicle);
-  const _destination = useRideStore((state) => state.destination);
-
-  const [statusIndex, setStatusIndex] = useState(0);
-
-  // Concentric Radar Rings Animation
-  const ring1 = useRef(new Animated.Value(0)).current;
-  const ring2 = useRef(new Animated.Value(0)).current;
-  const ring3 = useRef(new Animated.Value(0)).current;
+  const vehicleIcon: keyof typeof Ionicons.glyphMap =
+    selectedVehicle.group === 'bike' ? 'bicycle' : selectedVehicle.group === 'auto' ? 'bus' : 'car';
 
   useEffect(() => {
-    const createRingAnim = (anim: Animated.Value, delay: number) => {
-      return Animated.loop(
-        Animated.sequence([
-          Animated.delay(delay),
-          Animated.timing(anim, {
-            toValue: 1,
-            duration: 2000,
-            useNativeDriver: true,
-          }),
-          Animated.timing(anim, {
-            toValue: 0,
-            duration: 0,
-            useNativeDriver: true,
-          }),
-        ]),
-      );
-    };
-
-    const anim1 = createRingAnim(ring1, 0);
-    const anim2 = createRingAnim(ring2, 600);
-    const anim3 = createRingAnim(ring3, 1200);
-
-    anim1.start();
-    anim2.start();
-    anim3.start();
-
-    return () => {
-      anim1.stop();
-      anim2.stop();
-      anim3.stop();
-    };
-  }, [ring1, ring2, ring3]);
-
-  // Rotate status message
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setStatusIndex((prev) => (prev + 1) % SEARCH_STATUSES.length);
-    }, 900);
-    return () => clearInterval(interval);
-  }, []);
-
-  // Listen for driver assignment from rideStore
-  useEffect(() => {
-    if (currentStatus === 'DRIVER_ASSIGNED' || currentStatus === 'DRIVER_ARRIVED') {
+    if (
+      currentStatus === 'DRIVER_ASSIGNED' ||
+      currentStatus === 'DRIVER_ARRIVING' ||
+      currentStatus === 'DRIVER_ARRIVED'
+    ) {
       navigation.replace('DriverAssigned');
     }
   }, [currentStatus, navigation]);
 
-  const handleCancel = () => {
-    cancelRide();
-    navigation.navigate('MainTabs', { screen: 'RideTab' });
-  };
-
-  const getRingStyle = (anim: Animated.Value) => ({
-    opacity: anim.interpolate({
-      inputRange: [0, 0.7, 1],
-      outputRange: [0.8, 0.4, 0],
-    }),
-    transform: [
-      {
-        scale: anim.interpolate({
-          inputRange: [0, 1],
-          outputRange: [0.8, 2.5],
-        }),
-      },
-    ],
-  });
-
   return (
-    <SafeAreaView style={styles.container}>
-      {/* Background Simulated Map */}
-      <View style={styles.mapBackground}>
-        <SimulatedMap height="100%" showNearbyDrivers={true} />
-        <View style={styles.mapOverlay} />
-      </View>
-
-      {/* Main Radar & Status Content */}
-      <View style={styles.content}>
-        {/* Radar Center Visual */}
-        <View style={styles.radarContainer}>
-          <Animated.View style={[styles.radarRing, getRingStyle(ring1)]} />
-          <Animated.View style={[styles.radarRing, getRingStyle(ring2)]} />
-          <Animated.View style={[styles.radarRing, getRingStyle(ring3)]} />
-
-          <View style={styles.radarCenter}>
-            <QuickRideLogo showIconOnly size="md" />
-          </View>
+    <View style={styles.container}>
+      <BookingMap mode="searching" />
+      <View style={styles.driversCard}>
+        <View style={styles.driversIcon}>
+          <Ionicons name={vehicleIcon} size={14} color={Colors.primary} />
         </View>
+        <View>
+          <Text style={styles.driversTitle}>Nearby drivers</Text>
+          <Text style={styles.driversSub}>4 drivers in your area</Text>
+        </View>
+      </View>
+      <MapControlsColumn top={120} />
 
-        {/* Searching Status Sheet */}
-        <View style={styles.bottomCard}>
-          <View style={styles.handle} />
-
-          <View style={styles.rideBadge}>
-            <Ionicons name="car-sport" size={16} color={Colors.primary} />
-            <Text style={styles.rideBadgeText}>Searching for {selectedVehicle.name}</Text>
-          </View>
-
-          <Text style={styles.mainTitle}>Connecting with Captain</Text>
-          <Text style={styles.statusMessage}>{SEARCH_STATUSES[statusIndex]}</Text>
-
-          {/* Quick Info Box */}
-          <View style={styles.infoBox}>
-            <Ionicons name="shield-checkmark" size={20} color="#10B981" />
-            <Text style={styles.infoText}>
-              All QuickRide captains are background-verified and follow safety protocols.
+      <RideSheet>
+        <View style={styles.head}>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.title}>Finding you a driver</Text>
+            <Text style={styles.sub}>
+              We’re checking nearby drivers. This usually takes less than a minute.
             </Text>
           </View>
-
-          {/* Cancel Button */}
-          <TouchableOpacity activeOpacity={0.8} onPress={handleCancel} style={styles.cancelBtn}>
-            <Text style={styles.cancelText}>Cancel Request</Text>
-          </TouchableOpacity>
+          <View style={styles.waitBox}>
+            <Text style={styles.waitVal}>~ 1 min</Text>
+            <Text style={styles.waitLabel}>Estimated wait</Text>
+          </View>
         </View>
-      </View>
-    </SafeAreaView>
+
+        <View style={styles.timeline}>
+          {STEPS.map((label, index) => (
+            <View key={label} style={styles.step}>
+              <View style={[styles.stepIcon, index === 0 && styles.stepIconOn]}>
+                <Ionicons
+                  name={
+                    index === 0
+                      ? vehicleIcon
+                      : index === 1
+                        ? 'person-outline'
+                        : index === 2
+                          ? vehicleIcon
+                          : 'checkmark'
+                  }
+                  size={14}
+                  color={index === 0 ? Colors.white : Colors.gray400}
+                />
+              </View>
+              <Text style={[styles.stepLabel, index === 0 && styles.stepLabelOn]}>{label}</Text>
+            </View>
+          ))}
+        </View>
+
+        <View style={styles.route}>
+          <View style={styles.routeCol}>
+            <Text style={styles.pinLabel}>Pickup location</Text>
+            <Text style={styles.place}>{pickup.title}</Text>
+            <Text style={styles.city}>Gurugram, Haryana</Text>
+          </View>
+          <View style={styles.routeCol}>
+            <Text style={styles.pinLabel}>Destination</Text>
+            <Text style={styles.place}>{destination?.title}</Text>
+            <Text style={styles.city}>Gurugram, Haryana</Text>
+          </View>
+        </View>
+
+        <SoftPillButton
+          title="Cancel ride"
+          onPress={() => {
+            cancelRide();
+            navigation.navigate('MainTabs', { screen: 'HomeTab' });
+          }}
+        />
+      </RideSheet>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: Colors.white,
-  },
-  mapBackground: {
-    ...(StyleSheet.absoluteFill as any),
-  },
-  mapOverlay: {
-    ...(StyleSheet.absoluteFill as any),
-    backgroundColor: 'rgba(255, 255, 255, 0.45)',
-  },
-  content: {
-    flex: 1,
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  radarContainer: {
-    width: 140,
-    height: 140,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: 80,
-  },
-  radarRing: {
+  container: { flex: 1, backgroundColor: Colors.white, justifyContent: 'flex-end' },
+  driversCard: {
     position: 'absolute',
-    width: 130,
-    height: 130,
-    borderRadius: 65,
-    borderWidth: 2,
-    borderColor: Colors.primary,
-    backgroundColor: 'rgba(255, 107, 0, 0.12)',
-  },
-  radarCenter: {
-    width: 76,
-    height: 76,
-    borderRadius: 38,
+    top: 58,
+    right: 70,
     backgroundColor: Colors.white,
+    borderRadius: 16,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    zIndex: 6,
+    ...Layout.shadows.md,
+  },
+  driversIcon: {
+    width: 28,
+    height: 28,
+    borderRadius: 8,
+    backgroundColor: '#FFF1E6',
     alignItems: 'center',
     justifyContent: 'center',
-    ...Layout.shadows.orangeGlow,
-    borderWidth: 3,
-    borderColor: Colors.primary,
   },
-  radarLogo: {
-    width: 44,
-    height: 44,
-  },
-  bottomCard: {
-    width: '100%',
-    backgroundColor: Colors.white,
-    borderTopLeftRadius: 28,
-    borderTopRightRadius: 28,
-    paddingHorizontal: Layout.spacing.xl,
-    paddingTop: Layout.spacing.md,
-    paddingBottom: Layout.spacing.xxl,
-    alignItems: 'center',
-    ...Layout.shadows.lg,
-  },
-  handle: {
-    width: 40,
-    height: 4,
-    borderRadius: 2,
-    backgroundColor: Colors.gray300,
-    marginBottom: Layout.spacing.md,
-  },
-  rideBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#FFF3E8',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: Layout.borderRadius.full,
-    gap: 6,
-    marginBottom: Layout.spacing.sm,
-  },
-  rideBadgeText: {
-    fontSize: 13,
-    fontWeight: '700',
-    color: Colors.primary,
-  },
-  mainTitle: {
-    fontSize: 22,
-    fontWeight: '800',
-    color: Colors.textPrimary,
-    textAlign: 'center',
-  },
-  statusMessage: {
-    fontSize: 14,
-    color: Colors.gray500,
-    textAlign: 'center',
-    marginTop: 6,
-    marginBottom: Layout.spacing.lg,
-  },
-  infoBox: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#F0FDF4',
-    padding: Layout.spacing.md,
-    borderRadius: Layout.borderRadius.md,
-    gap: Layout.spacing.sm,
-    width: '100%',
-    borderWidth: 1,
-    borderColor: '#DCFCE7',
-    marginBottom: Layout.spacing.lg,
-  },
-  infoText: {
-    flex: 1,
-    fontSize: 12,
-    color: Colors.gray700,
-    lineHeight: 16,
-  },
-  cancelBtn: {
-    width: '100%',
-    height: 50,
-    borderRadius: Layout.borderRadius.xl,
+  driversTitle: { fontSize: 12, fontWeight: '700', color: Colors.textPrimary },
+  driversSub: { fontSize: 11, color: Colors.gray500 },
+  head: { flexDirection: 'row', gap: 12, marginBottom: 18 },
+  title: { fontSize: 24, fontWeight: '800', color: Colors.textPrimary },
+  sub: { fontSize: 13, color: Colors.gray500, marginTop: 6, lineHeight: 18 },
+  waitBox: { alignItems: 'flex-end' },
+  waitVal: { fontSize: 18, fontWeight: '800', color: Colors.primary },
+  waitLabel: { fontSize: 11, color: Colors.gray500 },
+  timeline: { flexDirection: 'row', marginBottom: 16 },
+  step: { flex: 1, alignItems: 'flex-start' },
+  stepIcon: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
     backgroundColor: Colors.gray100,
     alignItems: 'center',
     justifyContent: 'center',
+    marginBottom: 6,
   },
-  cancelText: {
-    fontSize: 15,
-    fontWeight: '700',
-    color: Colors.danger,
-  },
+  stepIconOn: { backgroundColor: Colors.primary },
+  stepLabel: { fontSize: 11, color: Colors.gray400, lineHeight: 14 },
+  stepLabelOn: { color: Colors.textPrimary, fontWeight: '700' },
+  route: { flexDirection: 'row', gap: 12, marginBottom: 16 },
+  routeCol: { flex: 1 },
+  pinLabel: { fontSize: 11, color: Colors.gray500 },
+  place: { fontSize: 14, fontWeight: '800', color: Colors.textPrimary, marginTop: 2 },
+  city: { fontSize: 12, color: Colors.gray500 },
 });
 
 export default SearchingDriverScreen;

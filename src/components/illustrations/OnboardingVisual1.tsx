@@ -87,7 +87,7 @@ export const OnboardingVisual1: React.FC<OnboardingVisualProps> = ({ height = 28
           <Circle cx="115" cy="65" r="8" fill={Colors.primary} />
           <Circle cx="115" cy="65" r="3.5" fill="#FFFFFF" />
 
-          {/* Modern White Sedan on the Screen */}
+          {/* Modern White premium on the Screen */}
           <G transform="translate(70, 115)">
             <Rect
               x="0"

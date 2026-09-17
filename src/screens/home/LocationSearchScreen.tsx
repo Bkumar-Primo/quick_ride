@@ -2,362 +2,293 @@ import { Ionicons } from '@expo/vector-icons';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type React from 'react';
 import { useState } from 'react';
-import {
-  Alert,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import { ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { BookingMap } from '../../components/map/BookingMap';
+import {
+  MapControlsColumn,
+  MapSheetScreen,
+  RideSheet,
+  RoundIconButton,
+} from '../../components/ride/RideChrome';
 import { Colors } from '../../constants/colors';
 import { Layout } from '../../constants/layout';
-import { POPULAR_DESTINATIONS } from '../../data';
+import {
+  AMBIENCE_MALL,
+  DLF_CYBER_CITY,
+  GURUGRAM_HOME,
+  IGI_AIRPORT,
+  MG_ROAD_METRO,
+  POPULAR_DESTINATIONS,
+} from '../../data';
 import type { RootStackParamList } from '../../navigation/types';
-import { requestCurrentLocation } from '../../services/location';
 import { useRideStore } from '../../store/rideStore';
-import { useUserStore } from '../../store/userStore';
 import type { LocationPoint } from '../../types';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'LocationSearch'>;
 
+const RECENT = [AMBIENCE_MALL, DLF_CYBER_CITY, MG_ROAD_METRO];
+const SUGGESTED = [
+  {
+    loc: DLF_CYBER_CITY,
+    meta: '12 km · 25 min',
+    icon: 'business' as const,
+    bg: '#EEF3FF',
+    color: '#5B8DEF',
+  },
+  {
+    loc: AMBIENCE_MALL,
+    meta: '8 km · 18 min',
+    icon: 'bag' as const,
+    bg: '#FFF3E8',
+    color: Colors.primary,
+  },
+  {
+    loc: IGI_AIRPORT,
+    meta: '14 km · 28 min',
+    icon: 'airplane' as const,
+    bg: '#EEF6FF',
+    color: '#3B82F6',
+  },
+];
+const SEARCHABLE = [GURUGRAM_HOME, ...POPULAR_DESTINATIONS];
+
 export const LocationSearchScreen: React.FC<Props> = ({ navigation }) => {
   const insets = useSafeAreaInsets();
   const pickup = useRideStore((state) => state.pickup);
-  const setPickup = useRideStore((state) => state.setPickup);
   const setDestination = useRideStore((state) => state.setDestination);
-  const user = useUserStore((state) => state.user);
+  const [query, setQuery] = useState('');
 
-  const [pickupText, setPickupText] = useState(pickup.title);
-  const [destText, setDestText] = useState('');
-
-  const handleUseCurrentLocation = async () => {
-    const result = await requestCurrentLocation();
-    if (result.granted && result.location) {
-      setPickup(result.location);
-      setPickupText(result.location.title);
-      return;
-    }
-    Alert.alert('Location unavailable', result.message ?? 'Could not read your current location.');
-  };
-
-  const handleSelectLocation = (loc: LocationPoint) => {
+  const select = (loc: LocationPoint) => {
     setDestination(loc);
-    navigation.navigate('VehicleSelect');
+    navigation.navigate('RoutePreview');
   };
 
-  const filteredDestinations = POPULAR_DESTINATIONS.filter(
-    (item) =>
-      item.title.toLowerCase().includes(destText.toLowerCase()) ||
-      item.subtitle.toLowerCase().includes(destText.toLowerCase()),
-  );
+  const isSearching = query.trim().length > 0;
+  const needle = query.trim().toLowerCase();
+  const filteredResults = isSearching
+    ? SEARCHABLE.filter(
+        (item) =>
+          item.title.toLowerCase().includes(needle) ||
+          item.subtitle.toLowerCase().includes(needle) ||
+          item.address.toLowerCase().includes(needle),
+      )
+    : [];
 
   return (
-    <View style={styles.container}>
-      {/* Top Search Inputs Card with Notch Inset Protection */}
-      <View style={[styles.headerCard, { paddingTop: insets.top + 6 }]}>
-        <View style={styles.topBar}>
-          <TouchableOpacity
-            activeOpacity={0.7}
-            onPress={() => navigation.goBack()}
-            style={styles.backBtn}
-          >
-            <Ionicons name="arrow-back" size={24} color={Colors.textPrimary} />
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>Select Route</Text>
-          <View style={{ width: 40 }} />
+    <MapSheetScreen
+      mapFlex={0.32}
+      map={<BookingMap mode="search" />}
+      overlay={
+        <>
+          <View style={[styles.topBar, { top: insets.top + 8 }]} pointerEvents="box-none">
+            <RoundIconButton icon="chevron-back" onPress={() => navigation.goBack()} />
+            <TouchableOpacity
+              style={styles.pickupPill}
+              onPress={() => navigation.navigate('PickupConfirm')}
+            >
+              <Text style={styles.pickupLabel}>Pickup</Text>
+              <Text style={styles.pickupValue} numberOfLines={1}>
+                {pickup.title} ›
+              </Text>
+            </TouchableOpacity>
+          </View>
+          <MapControlsColumn bottom={16} />
+        </>
+      }
+    >
+      <RideSheet style={styles.sheet}>
+        <Text style={styles.hero}>Where to?</Text>
+        <Text style={styles.heroSub}>Enter a destination to see ride options</Text>
+
+        <View style={styles.searchBar}>
+          <Ionicons name="search" size={18} color={Colors.primary} />
+          <TextInput
+            value={query}
+            onChangeText={setQuery}
+            placeholder="Search destination"
+            placeholderTextColor="#F3B48A"
+            style={styles.searchInput}
+          />
         </View>
 
-        {/* Pickup & Destination Boxes */}
-        <View style={styles.inputContainer}>
-          <View style={styles.pinsColumn}>
-            <View style={styles.greenDot} />
-            <View style={styles.dotLine} />
-            <View style={styles.orangeSquare} />
+        {!isSearching ? (
+          <View style={styles.shortcuts}>
+            <TouchableOpacity style={styles.shortItem} onPress={() => select(GURUGRAM_HOME)}>
+              <Ionicons name="home-outline" size={18} color={Colors.primary} />
+              <View style={styles.shortCopy}>
+                <Text style={styles.shortTitle}>Home</Text>
+                <Text style={styles.shortSub} numberOfLines={1}>
+                  Sector 56
+                </Text>
+              </View>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.shortItem} onPress={() => select(DLF_CYBER_CITY)}>
+              <Ionicons name="briefcase-outline" size={18} color={Colors.primary} />
+              <View style={styles.shortCopy}>
+                <Text style={styles.shortTitle}>Work</Text>
+                <Text style={styles.shortSub} numberOfLines={1}>
+                  DLF Cyber City
+                </Text>
+              </View>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.shortItem} onPress={() => select(AMBIENCE_MALL)}>
+              <Ionicons name="star" size={18} color={Colors.primary} />
+              <View style={styles.shortCopy}>
+                <Text style={styles.shortTitle}>Recent</Text>
+                <Text style={styles.shortSub} numberOfLines={1}>
+                  Ambience Mall
+                </Text>
+              </View>
+            </TouchableOpacity>
           </View>
+        ) : null}
 
-          <View style={styles.fieldsColumn}>
-            {/* Pickup Input */}
-            <View style={styles.inputBox}>
-              <TextInput
-                style={styles.input}
-                value={pickupText}
-                onChangeText={setPickupText}
-                placeholder="Pickup location"
-                placeholderTextColor={Colors.gray400}
-              />
-              <TouchableOpacity onPress={() => void handleUseCurrentLocation()}>
-                <Ionicons name="locate" size={18} color={Colors.primary} />
-              </TouchableOpacity>
-            </View>
-
-            <View style={styles.inputDivider} />
-
-            {/* Destination Input */}
-            <View style={styles.inputBox}>
-              <TextInput
-                style={[styles.input, styles.destInput]}
-                value={destText}
-                onChangeText={setDestText}
-                placeholder="Where to? (e.g. BKC, Airport)"
-                placeholderTextColor={Colors.gray400}
-                autoFocus
-              />
-              {destText.length > 0 && (
-                <TouchableOpacity onPress={() => setDestText('')}>
-                  <Ionicons name="close-circle" size={18} color={Colors.gray400} />
-                </TouchableOpacity>
+        <ScrollView
+          style={styles.list}
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={styles.scroll}
+          keyboardShouldPersistTaps="handled"
+        >
+          {isSearching ? (
+            <>
+              <Text style={[styles.sectionTitle, styles.resultsTitle]}>Search results</Text>
+              {filteredResults.length === 0 ? (
+                <Text style={styles.empty}>No matching places. Try a mall, metro, or area.</Text>
+              ) : (
+                filteredResults.map((item) => (
+                  <TouchableOpacity
+                    key={item.id}
+                    style={styles.listRow}
+                    onPress={() => select(item)}
+                  >
+                    <Ionicons name="location-outline" size={18} color={Colors.gray400} />
+                    <View style={styles.listCopy}>
+                      <Text style={styles.listTitle}>{item.title}</Text>
+                      <Text style={styles.listSub}>{item.subtitle}</Text>
+                    </View>
+                    <Ionicons name="chevron-forward" size={16} color={Colors.gray300} />
+                  </TouchableOpacity>
+                ))
               )}
-            </View>
+            </>
+          ) : null}
+
+          <View style={[styles.sectionHead, isSearching && styles.sectionSpaced]}>
+            <Text style={styles.sectionTitle}>Recent locations</Text>
+            <Text style={styles.seeAll}>See all</Text>
           </View>
-        </View>
-      </View>
-
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.listContent}>
-        {/* Saved Places */}
-        <Text style={styles.sectionTitle}>Saved Places</Text>
-        <View style={styles.savedGrid}>
-          {user.savedPlaces.map((place) => (
-            <TouchableOpacity
-              key={place.id}
-              activeOpacity={0.8}
-              onPress={() => handleSelectLocation(place)}
-              style={styles.savedPlaceCard}
-            >
-              <View style={styles.savedIconBg}>
-                <Ionicons
-                  name={
-                    place.type === 'home'
-                      ? 'home'
-                      : place.type === 'work'
-                        ? 'briefcase'
-                        : 'location'
-                  }
-                  size={18}
-                  color={Colors.primary}
-                />
+          {RECENT.map((item) => (
+            <TouchableOpacity key={item.id} style={styles.listRow} onPress={() => select(item)}>
+              <Ionicons name="time-outline" size={18} color={Colors.gray400} />
+              <View style={styles.listCopy}>
+                <Text style={styles.listTitle}>{item.title}</Text>
+                <Text style={styles.listSub}>{item.subtitle}</Text>
               </View>
-              <View style={styles.savedInfo}>
-                <Text style={styles.savedTitle}>{place.title}</Text>
-                <Text style={styles.savedSubtitle} numberOfLines={1}>
-                  {place.subtitle}
-                </Text>
-              </View>
+              <Ionicons name="chevron-forward" size={16} color={Colors.gray300} />
             </TouchableOpacity>
           ))}
-        </View>
 
-        {/* Popular Destinations */}
-        <Text style={styles.sectionTitle}>Popular Destinations</Text>
-        <View style={styles.placesList}>
-          {filteredDestinations.map((place) => (
-            <TouchableOpacity
-              key={place.id}
-              activeOpacity={0.7}
-              onPress={() => handleSelectLocation(place)}
-              style={styles.placeRow}
-            >
-              <View style={styles.placeIconContainer}>
-                <Ionicons
-                  name={
-                    place.type === 'airport'
-                      ? 'airplane'
-                      : place.type === 'work'
-                        ? 'business'
-                        : 'location-outline'
-                  }
-                  size={20}
-                  color={Colors.gray600}
-                />
-              </View>
-              <View style={styles.placeInfo}>
-                <Text style={styles.placeTitle}>{place.title}</Text>
-                <Text style={styles.placeAddress} numberOfLines={1}>
-                  {place.subtitle}
-                </Text>
-              </View>
-              <Ionicons name="arrow-forward" size={16} color={Colors.gray400} />
-            </TouchableOpacity>
-          ))}
-        </View>
-      </ScrollView>
-    </View>
+          <Text style={[styles.sectionTitle, styles.sectionSpaced]}>Suggested destinations</Text>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.suggestRow}
+          >
+            {SUGGESTED.map((item) => (
+              <TouchableOpacity
+                key={item.loc.id}
+                style={styles.suggestCard}
+                onPress={() => select(item.loc)}
+              >
+                <View style={[styles.suggestIcon, { backgroundColor: item.bg }]}>
+                  <Ionicons name={item.icon} size={16} color={item.color} />
+                </View>
+                <View>
+                  <Text style={styles.listTitle}>{item.loc.title}</Text>
+                  <Text style={styles.listSub}>{item.meta}</Text>
+                </View>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        </ScrollView>
+      </RideSheet>
+    </MapSheetScreen>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#F8FAFC',
-  },
-  headerCard: {
-    backgroundColor: Colors.white,
-    paddingHorizontal: Layout.spacing.lg,
-    paddingBottom: Layout.spacing.lg,
-    borderBottomWidth: 1,
-    borderBottomColor: Colors.gray200,
-    ...Layout.shadows.sm,
-  },
   topBar: {
+    position: 'absolute',
+    left: 16,
+    right: 70,
+    zIndex: 6,
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingVertical: Layout.spacing.sm,
+    gap: 10,
   },
-  backBtn: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: Colors.gray100,
-  },
-  headerTitle: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: Colors.textPrimary,
-  },
-  inputContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: Colors.gray50,
-    borderRadius: Layout.borderRadius.xl,
-    padding: Layout.spacing.md,
-    marginTop: Layout.spacing.sm,
-    borderWidth: 1,
-    borderColor: Colors.gray200,
-  },
-  pinsColumn: {
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    height: 60,
-    marginRight: Layout.spacing.md,
-    paddingVertical: 4,
-  },
-  greenDot: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    backgroundColor: '#10B981',
-  },
-  dotLine: {
-    width: 2,
+  pickupPill: {
     flex: 1,
-    backgroundColor: Colors.gray300,
-    marginVertical: 2,
-  },
-  orangeSquare: {
-    width: 10,
-    height: 10,
-    borderRadius: 2,
-    backgroundColor: Colors.primary,
-  },
-  fieldsColumn: {
-    flex: 1,
-  },
-  inputBox: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    height: 38,
-  },
-  input: {
-    flex: 1,
-    fontSize: 15,
-    color: Colors.textPrimary,
-    fontWeight: '500',
-  },
-  destInput: {
-    fontWeight: '600',
-  },
-  inputDivider: {
-    height: 1,
-    backgroundColor: Colors.gray200,
-    marginVertical: 2,
-  },
-  listContent: {
-    padding: Layout.spacing.lg,
-  },
-  sectionTitle: {
-    fontSize: 16,
-    fontWeight: '800',
-    color: Colors.textPrimary,
-    marginBottom: Layout.spacing.sm,
-    marginTop: Layout.spacing.xs,
-  },
-  savedGrid: {
-    gap: Layout.spacing.sm,
-    marginBottom: Layout.spacing.xl,
-  },
-  savedPlaceCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
     backgroundColor: Colors.white,
-    padding: Layout.spacing.md,
-    borderRadius: Layout.borderRadius.lg,
-    borderWidth: 1,
-    borderColor: Colors.gray200,
-    ...Layout.shadows.sm,
+    borderRadius: 16,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    ...Layout.shadows.md,
   },
-  savedIconBg: {
-    width: 38,
-    height: 38,
-    borderRadius: 19,
+  pickupLabel: { fontSize: 11, color: Colors.gray500 },
+  pickupValue: { fontSize: 13, fontWeight: '700', color: Colors.textPrimary },
+  sheet: { flex: 1 },
+  hero: { fontSize: 28, fontWeight: '800', color: Colors.textPrimary },
+  heroSub: { fontSize: 13, color: Colors.gray500, marginTop: 4, marginBottom: 14 },
+  searchBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
     backgroundColor: '#FFF3E8',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: Layout.spacing.md,
+    borderRadius: 16,
+    paddingHorizontal: 14,
+    height: 48,
+    gap: 8,
   },
-  savedInfo: {
-    flex: 1,
+  searchInput: { flex: 1, fontSize: 15, color: Colors.textPrimary, fontWeight: '600' },
+  shortcuts: { flexDirection: 'row', marginTop: 16, marginBottom: 4, gap: 8 },
+  shortItem: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 6 },
+  shortCopy: { flex: 1, minWidth: 0 },
+  shortTitle: { fontSize: 13, fontWeight: '700', color: Colors.textPrimary },
+  shortSub: { fontSize: 11, color: Colors.gray500 },
+  list: { flex: 1, minHeight: 0, marginTop: 4 },
+  scroll: { paddingBottom: 12 },
+  resultsTitle: { marginTop: 10, marginBottom: 6 },
+  empty: { fontSize: 13, color: Colors.gray500, marginBottom: 8, lineHeight: 18 },
+  sectionHead: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 10,
+    marginBottom: 6,
   },
-  savedTitle: {
-    fontSize: 15,
-    fontWeight: '700',
-    color: Colors.textPrimary,
-  },
-  savedSubtitle: {
-    fontSize: 12,
-    color: Colors.gray500,
-    marginTop: 2,
-  },
-  placesList: {
-    backgroundColor: Colors.white,
-    borderRadius: Layout.borderRadius.lg,
-    borderWidth: 1,
-    borderColor: Colors.gray200,
-    overflow: 'hidden',
-    ...Layout.shadows.sm,
-  },
-  placeRow: {
+  sectionTitle: { fontSize: 14, fontWeight: '700', color: Colors.textPrimary },
+  sectionSpaced: { marginTop: 16, marginBottom: 8 },
+  seeAll: { color: Colors.primary, fontWeight: '700', fontSize: 13 },
+  listRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: 10, gap: 10 },
+  listCopy: { flex: 1 },
+  listTitle: { fontSize: 14, fontWeight: '700', color: Colors.textPrimary },
+  listSub: { fontSize: 12, color: Colors.gray500, marginTop: 1 },
+  suggestRow: { gap: 10, paddingRight: 8 },
+  suggestCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: Layout.spacing.md,
-    borderBottomWidth: 1,
-    borderBottomColor: Colors.gray100,
+    gap: 8,
+    borderWidth: 1,
+    borderColor: Colors.gray100,
+    borderRadius: 16,
+    padding: 10,
+    minWidth: 168,
   },
-  placeIconContainer: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: Colors.gray100,
+  suggestIcon: {
+    width: 34,
+    height: 34,
+    borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: Layout.spacing.md,
-  },
-  placeInfo: {
-    flex: 1,
-  },
-  placeTitle: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: Colors.textPrimary,
-  },
-  placeAddress: {
-    fontSize: 12,
-    color: Colors.gray500,
-    marginTop: 2,
   },
 });
 

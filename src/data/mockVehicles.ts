@@ -1,65 +1,112 @@
-import type { VehicleOption } from '../types';
+import { images } from '../../assets';
+import type { RideGroup, VehicleOption } from '../types';
 
 export const MOCK_VEHICLES: VehicleOption[] = [
   {
-    id: 'veh-mini',
-    name: 'Quick Mini',
-    tagline: 'Affordable, compact rides',
-    category: 'mini',
-    capacity: 4,
-    basePrice: 120,
-    price: 189,
-    etaMinutes: 3,
-    badge: 'Popular',
-    badgeColor: '#10B981',
-    iconName: 'car-outline',
-  },
-  {
-    id: 'veh-sedan',
-    name: 'Quick Prime Sedan',
-    tagline: 'Top-rated drivers & spacious sedans',
-    category: 'sedan',
-    capacity: 4,
-    basePrice: 180,
-    price: 279,
-    etaMinutes: 4,
-    badge: 'Fastest',
-    badgeColor: '#FF6B00',
-    iconName: 'car-sport-outline',
-  },
-  {
-    id: 'veh-suv',
-    name: 'Quick XL / SUV',
-    tagline: 'Extra seats & boot space for groups',
-    category: 'suv',
-    capacity: 6,
-    basePrice: 280,
-    price: 439,
-    etaMinutes: 6,
-    iconName: 'car-estate-outline',
-  },
-  {
-    id: 'veh-moto',
-    name: 'Quick Moto',
-    tagline: 'Beat city traffic at pocket-friendly fares',
+    id: 'veh-bike',
+    name: 'Bike',
+    tagline: 'Beat traffic, reach faster',
+    group: 'bike',
     category: 'moto',
     capacity: 1,
-    basePrice: 50,
-    price: 89,
+    basePrice: 35,
+    price: 49,
     etaMinutes: 2,
-    badge: 'Saver',
-    badgeColor: '#3B82F6',
-    iconName: 'bicycle-outline',
+    badge: 'Fastest',
+    badgeColor: '#FF6B00',
+    iconName: 'bicycle',
+    imageUrl: images.bikeLite,
+  },
+  {
+    id: 'veh-bike-plus',
+    name: 'Bike Plus',
+    tagline: 'Helmet, extra comfort',
+    group: 'bike',
+    category: 'moto',
+    capacity: 1,
+    basePrice: 48,
+    price: 69,
+    etaMinutes: 3,
+    iconName: 'bicycle',
+    imageUrl: images.bikePlus,
   },
   {
     id: 'veh-auto',
-    name: 'Quick Auto',
-    tagline: 'Reliable doorstep 3-wheeler rides',
+    name: 'Auto',
+    tagline: 'Everyday city rides',
+    group: 'auto',
     category: 'auto',
     capacity: 3,
-    basePrice: 80,
-    price: 139,
+    basePrice: 62,
+    price: 89,
     etaMinutes: 4,
-    iconName: 'navigate-circle-outline',
+    badge: 'Popular',
+    badgeColor: '#FF6B00',
+    iconName: 'bus-outline',
+    imageUrl: images.auto,
+  },
+  {
+    id: 'veh-quick',
+    name: 'Mini',
+    tagline: 'Affordable everyday cabs',
+    group: 'cab',
+    category: 'mini',
+    capacity: 4,
+    basePrice: 140,
+    price: 180,
+    etaMinutes: 3,
+    badge: 'Best value',
+    badgeColor: '#FF6B00',
+    iconName: 'car-outline',
+    imageUrl: images.cabEconomy,
+  },
+  {
+    id: 'veh-comfort',
+    name: 'Premium',
+    tagline: 'More space, more comfort',
+    group: 'cab',
+    category: 'premium',
+    capacity: 4,
+    basePrice: 190,
+    price: 240,
+    etaMinutes: 5,
+    iconName: 'car-sport-outline',
+    imageUrl: images.cabPremium,
+  },
+  {
+    id: 'veh-xl',
+    name: 'SUV',
+    tagline: 'For families & groups',
+    group: 'cab',
+    category: 'suv',
+    capacity: 6,
+    basePrice: 260,
+    price: 320,
+    etaMinutes: 7,
+    iconName: 'car-outline',
+    imageUrl: images.cabSuv,
   },
 ];
+
+export const RIDE_GROUPS: {
+  id: RideGroup;
+  label: string;
+  hint: string;
+  icon: 'motorbike' | 'rickshaw' | 'car-side';
+}[] = [
+  { id: 'bike', label: 'Bike', hint: 'Fastest', icon: 'motorbike' },
+  { id: 'auto', label: 'Auto', hint: 'Everyday', icon: 'rickshaw' },
+  { id: 'cab', label: 'Cab', hint: 'Comfort', icon: 'car-side' },
+];
+
+export const vehiclesInGroup = (group: RideGroup): VehicleOption[] =>
+  MOCK_VEHICLES.filter((vehicle) => vehicle.group === group);
+
+export const startingFareForGroup = (group: RideGroup): number =>
+  Math.min(...vehiclesInGroup(group).map((vehicle) => vehicle.price));
+
+export const getVehicleById = (id: string): VehicleOption =>
+  MOCK_VEHICLES.find((vehicle) => vehicle.id === id) ?? MOCK_VEHICLES[0];
+
+export const vehicleCapacityLabel = (vehicle: VehicleOption): string =>
+  vehicle.group === 'bike' ? '1 rider' : `${vehicle.capacity} seats`;

@@ -1,5 +1,5 @@
 import type { UserProfile } from '../types';
-import { CURRENT_LOCATION, POPULAR_DESTINATIONS } from './mockLocations';
+import { AMBIENCE_MALL, DLF_CYBER_CITY, GURUGRAM_HOME } from './mockLocations';
 
 export const MOCK_USER: UserProfile = {
   id: 'usr-901',
@@ -12,9 +12,5 @@ export const MOCK_USER: UserProfile = {
   totalRides: 48,
   walletBalance: 450.0,
   memberSince: 'March 2025',
-  savedPlaces: [
-    POPULAR_DESTINATIONS[5], // Home
-    POPULAR_DESTINATIONS[0], // Work / BKC
-    POPULAR_DESTINATIONS[1], // Airport
-  ],
+  savedPlaces: [GURUGRAM_HOME, DLF_CYBER_CITY, AMBIENCE_MALL],
 };
