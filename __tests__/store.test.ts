@@ -22,7 +22,7 @@ describe('QuickRide Customer App State Management (Zustand)', () => {
     const phone = '+919876543210';
     const sent = await auth.requestOtp(phone);
     expect(sent.ok).toBe(true);
-    expect(sent.previewCode).toHaveLength(6);
+    expect(sent.previewCode).toBe('123456');
 
     const wrongCode = sent.previewCode === '000000' ? '111111' : '000000';
     const rejected = await auth.verifyOtp(wrongCode);
@@ -87,7 +87,7 @@ describe('OTP service', () => {
     const sent = await sendOtp(phone);
     expect(sent.ok).toBe(true);
     const code = peekOtpForTests(phone);
-    expect(code).toHaveLength(6);
+    expect(code).toBe('123456');
 
     const wrong = code === '000000' ? '111111' : '000000';
     expect(verifyOtpCode(phone, wrong).ok).toBe(false);

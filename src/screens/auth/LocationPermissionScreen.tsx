@@ -1,42 +1,49 @@
 import { Ionicons } from '@expo/vector-icons';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { LinearGradient } from 'expo-linear-gradient';
 import type React from 'react';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { Alert, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Button } from '../../components/common/Button';
+import { QuickRideLogo } from '../../components/common/QuickRideLogo';
 import { Colors } from '../../constants/colors';
 import { Layout } from '../../constants/layout';
 import type { AuthStackParamList } from '../../navigation/types';
 import { openLocationSettings, requestCurrentLocation } from '../../services/location';
-import { useAuthStore } from '../../store/authStore';
 import { useRideStore } from '../../store/rideStore';
 
 type Props = NativeStackScreenProps<AuthStackParamList, 'LocationPermission'>;
 
-const locationHero = require('../../assets/images/location_hero.png');
+const locationHero = require('../../assets/images/allowLocation.png');
 
-export const LocationPermissionScreen: React.FC<Props> = () => {
+export const LocationPermissionScreen: React.FC<Props> = ({ navigation }) => {
   const insets = useSafeAreaInsets();
   const [loading, setLoading] = useState(false);
-  const grantLocation = useAuthStore((state) => state.grantLocation);
-  const skipLocation = useAuthStore((state) => state.skipLocation);
+  const requestingRef = useRef(false);
+
+  const goToAllSet = () => {
+    navigation.navigate('AllSet');
+  };
 
   const handleAllow = async () => {
+    if (requestingRef.current) return;
+    requestingRef.current = true;
     setLoading(true);
     const result = await requestCurrentLocation();
     setLoading(false);
+    requestingRef.current = false;
 
     if (result.granted) {
       if (result.location) {
         useRideStore.getState().setPickup(result.location);
       }
-      grantLocation();
+      goToAllSet();
       return;
     }
 
     Alert.alert('Location permission needed', result.message ?? 'Please allow location access.', [
-      { text: 'Not Now', style: 'cancel' },
+      { text: 'Not Now', style: 'cancel', onPress: goToAllSet },
       result.canOpenSettings
         ? { text: 'Open Settings', onPress: openLocationSettings }
         : { text: 'Try Again', onPress: () => void handleAllow() },
@@ -44,87 +51,119 @@ export const LocationPermissionScreen: React.FC<Props> = () => {
   };
 
   return (
-    <ScrollView
-      contentContainerStyle={[styles.scrollContent, { paddingBottom: Math.max(insets.bottom, 20) }]}
-      bounces={false}
-      showsVerticalScrollIndicator={false}
-    >
-      <View style={[styles.heroWrap, { paddingTop: insets.top }]}>
-        <Image source={locationHero} style={styles.heroImage} resizeMode="cover" />
-      </View>
+    <View style={styles.container}>
+      <ScrollView
+        contentContainerStyle={[
+          styles.scrollContent,
+          { paddingBottom: Math.max(insets.bottom, 20) },
+        ]}
+        bounces={false}
+        showsVerticalScrollIndicator={false}
+      >
+        <View style={[styles.hero, { paddingTop: insets.top + 8 }]}>
+          <View style={styles.topRow}>
+            <QuickRideLogo size="md" />
+          </View>
 
-      <View style={styles.formCard}>
-        <Text style={styles.title}>Allow location access</Text>
-        <Text style={styles.description}>
-          We need your location to find nearby drivers, show accurate pickup points, provide better
-          routes, and give you a smooth ride experience.
-        </Text>
-
-        <Button
-          title="Allow Location"
-          icon="paper-plane"
-          onPress={() => void handleAllow()}
-          loading={loading}
-          style={styles.allowBtn}
-        />
-
-        <TouchableOpacity activeOpacity={0.7} onPress={skipLocation} style={styles.notNowBtn}>
-          <Text style={styles.notNowText}>Not Now</Text>
-        </TouchableOpacity>
-
-        <View style={styles.securityBox}>
-          <Ionicons name="lock-closed" size={16} color={Colors.gray600} style={styles.lockIcon} />
-          <Text style={styles.securityText}>
-            Your location is only used to provide ride services and is kept private and secure.
-          </Text>
+          <View style={styles.artWrap}>
+            <Image source={locationHero} style={styles.heroImage} resizeMode="contain" />
+            <LinearGradient
+              pointerEvents="none"
+              colors={['rgba(255,255,255,0)', 'rgba(255,255,255,0.35)', Colors.white]}
+              locations={[0, 0.4, 1]}
+              style={styles.heroFade}
+            />
+          </View>
         </View>
-      </View>
-    </ScrollView>
+
+        <View style={styles.copy}>
+          <Text style={styles.title}>Allow location access</Text>
+          <Text style={styles.description}>
+            We need your location to find nearby drivers, show accurate pickup points, provide
+            better routes, and give you a smooth ride experience.
+          </Text>
+
+          <Button
+            title="Allow Location"
+            icon="paper-plane"
+            onPress={() => void handleAllow()}
+            loading={loading}
+            style={styles.allowBtn}
+          />
+
+          <TouchableOpacity activeOpacity={0.7} onPress={goToAllSet} style={styles.notNowBtn}>
+            <Text style={styles.notNowText}>Not Now</Text>
+          </TouchableOpacity>
+
+          <View style={styles.securityBox}>
+            <Ionicons name="lock-closed" size={16} color={Colors.gray600} style={styles.lockIcon} />
+            <Text style={styles.securityText}>
+              Your location is only used to provide ride services and is kept private and secure.
+            </Text>
+          </View>
+        </View>
+      </ScrollView>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: Colors.white,
+  },
   scrollContent: {
     flexGrow: 1,
     backgroundColor: Colors.heroCream,
   },
-  heroWrap: {
-    width: '100%',
+  hero: {
     backgroundColor: Colors.heroCream,
+  },
+  topRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: Layout.spacing.lg,
+  },
+  artWrap: {
+    height: 340,
+    marginTop: 4,
   },
   heroImage: {
     width: '100%',
-    height: 420,
+    height: '100%',
   },
-  formCard: {
-    flex: 1,
+  heroFade: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
+    height: 150,
+  },
+  copy: {
     backgroundColor: Colors.white,
-    borderTopLeftRadius: 28,
-    borderTopRightRadius: 28,
     paddingHorizontal: Layout.spacing.xl,
-    paddingTop: Layout.spacing.xl,
-    marginTop: -36,
-    ...Layout.shadows.lg,
+    paddingTop: 8,
+    flexGrow: 1,
   },
   title: {
-    fontSize: 26,
+    fontSize: 28,
     fontWeight: '800',
-    color: Colors.textPrimary,
+    color: '#0F172A',
     textAlign: 'center',
-    letterSpacing: -0.5,
+    letterSpacing: -0.6,
   },
   description: {
-    fontSize: 14,
-    color: Colors.textSecondary,
+    fontSize: 16,
+    color: '#94A3B8',
     textAlign: 'center',
-    marginTop: Layout.spacing.sm,
-    marginBottom: Layout.spacing.xl,
-    lineHeight: 21,
+    marginTop: 10,
+    marginBottom: 24,
+    lineHeight: 24,
     paddingHorizontal: 4,
   },
   allowBtn: {
-    marginBottom: Layout.spacing.sm,
     borderRadius: 999,
+    backgroundColor: '#FF5B00',
   },
   notNowBtn: {
     alignItems: 'center',
@@ -133,7 +172,7 @@ const styles = StyleSheet.create({
   notNowText: {
     fontSize: 16,
     fontWeight: '700',
-    color: Colors.primary,
+    color: '#FF5B00',
   },
   securityBox: {
     flexDirection: 'row',
@@ -148,7 +187,7 @@ const styles = StyleSheet.create({
   },
   securityText: {
     flex: 1,
-    fontSize: 11,
+    fontSize: 12,
     color: Colors.gray600,
     lineHeight: 16,
   },

@@ -1,9 +1,11 @@
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import type React from 'react';
+import { AllSetScreen } from '../screens/auth/AllSetScreen';
 import { LocationPermissionScreen } from '../screens/auth/LocationPermissionScreen';
 import { LoginScreen } from '../screens/auth/LoginScreen';
 import { OnboardingScreen } from '../screens/auth/OnboardingScreen';
 import { OtpVerificationScreen } from '../screens/auth/OtpVerificationScreen';
+import { ProfileSetupScreen } from '../screens/auth/ProfileSetupScreen';
 import { SplashScreen } from '../screens/auth/SplashScreen';
 import type { AuthStackParamList } from './types';
 
@@ -22,7 +24,9 @@ export const AuthNavigator: React.FC = () => {
       <Stack.Screen name="Onboarding" component={OnboardingScreen} />
       <Stack.Screen name="Login" component={LoginScreen} />
       <Stack.Screen name="OtpVerification" component={OtpVerificationScreen} />
+      <Stack.Screen name="ProfileSetup" component={ProfileSetupScreen} />
       <Stack.Screen name="LocationPermission" component={LocationPermissionScreen} />
+      <Stack.Screen name="AllSet" component={AllSetScreen} />
     </Stack.Navigator>
   );
 };

@@ -6,6 +6,8 @@ export type AuthStackParamList = {
   Onboarding: undefined;
   Login: undefined;
   OtpVerification: { phone: string };
+  ProfileSetup: undefined;
+  AllSet: undefined;
   LocationPermission: undefined;
 };
 

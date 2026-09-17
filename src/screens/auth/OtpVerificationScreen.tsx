@@ -1,10 +1,10 @@
 import { Ionicons } from '@expo/vector-icons';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { LinearGradient } from 'expo-linear-gradient';
 import type React from 'react';
 import { useEffect, useRef, useState } from 'react';
 import {
   Alert,
-  Dimensions,
   Image,
   KeyboardAvoidingView,
   Platform,
@@ -17,34 +17,28 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Button } from '../../components/common/Button';
+import { QuickRideLogo } from '../../components/common/QuickRideLogo';
 import { Colors } from '../../constants/colors';
 import { Layout } from '../../constants/layout';
 import type { AuthStackParamList } from '../../navigation/types';
 import { useAuthStore } from '../../store/authStore';
-import { digitsOnly, formatE164Display } from '../../utils/phone';
+import { digitsOnly } from '../../utils/phone';
 
 type Props = NativeStackScreenProps<AuthStackParamList, 'OtpVerification'>;
 
-const { width } = Dimensions.get('window');
-const otpHero = require('../../assets/images/otp_hero.png');
-// Exact aspect ratio of 04 qr-otp.png master hero (941 x 640)
-const HERO_ASPECT = 640 / 941;
+const loginHero = require('../../assets/images/loginimage1.png');
 
 export const OtpVerificationScreen: React.FC<Props> = ({ route, navigation }) => {
   const insets = useSafeAreaInsets();
-  const heroHeight = Math.round(width * HERO_ASPECT);
   const phone = route.params?.phone || '+91 78945 61230';
-  const [otp, setOtp] = useState('196804');
+  const [otp, setOtp] = useState('');
   const [timer, setTimer] = useState(18);
   const [loading, setLoading] = useState(false);
   const [focused, setFocused] = useState(true);
   const [error, setError] = useState('');
-  const [showPreview, setShowPreview] = useState(true);
   const inputRef = useRef<TextInput>(null);
   const verifyOtp = useAuthStore((state) => state.verifyOtp);
   const requestOtp = useAuthStore((state) => state.requestOtp);
-  const storePreviewCode = useAuthStore((state) => state.otpPreviewCode);
-  const previewCode = storePreviewCode || '196804';
 
   useEffect(() => {
     const timeout = setTimeout(() => inputRef.current?.focus(), 400);
@@ -76,7 +70,7 @@ export const OtpVerificationScreen: React.FC<Props> = ({ route, navigation }) =>
       setError(result.error ?? 'Incorrect code.');
       return;
     }
-    navigation.navigate('LocationPermission');
+    navigation.navigate('ProfileSetup');
   };
 
   const handleResend = async () => {
@@ -88,7 +82,6 @@ export const OtpVerificationScreen: React.FC<Props> = ({ route, navigation }) =>
       return;
     }
     setTimer(28);
-    setShowPreview(true);
     inputRef.current?.focus();
   };
 
@@ -99,53 +92,43 @@ export const OtpVerificationScreen: React.FC<Props> = ({ route, navigation }) =>
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       style={styles.container}
     >
-      <ScrollView
-        contentContainerStyle={[
-          styles.scrollContent,
-          { paddingBottom: Math.max(insets.bottom, 20) },
-        ]}
-        keyboardShouldPersistTaps="handled"
-        bounces={false}
-        showsVerticalScrollIndicator={false}
-      >
-        {/* Full-bleed hero starting at top of screen without artificial gap */}
-        <View style={styles.heroWrap}>
-          <Image source={otpHero} style={{ width, height: heroHeight }} resizeMode="cover" />
-          {/* Exactly ONE clean, native, fully interactive back button */}
+      <View style={[styles.heroContent, { paddingTop: insets.top + 8 }]}>
+        <Image source={loginHero} style={styles.backdropImage} resizeMode="cover" />
+        <LinearGradient
+          pointerEvents="none"
+          colors={['rgba(255,246,236,0.88)', 'rgba(255,246,236,0.35)', 'rgba(255,246,236,0)']}
+          start={{ x: 0, y: 0.22 }}
+          end={{ x: 0.55, y: 0.55 }}
+          style={StyleSheet.absoluteFill}
+        />
+        <LinearGradient
+          pointerEvents="none"
+          colors={['rgba(255,255,255,0)', 'rgba(255,255,255,0.7)']}
+          style={styles.heroBottomFade}
+        />
+
+        <View style={styles.heroTopRow}>
           <TouchableOpacity
             activeOpacity={0.7}
             onPress={() => navigation.goBack()}
-            style={[styles.backBtn, { top: insets.top + 8 }]}
+            style={styles.backBtn}
           >
-            <Ionicons name="arrow-back" size={24} color="#0F172A" />
+            <Ionicons name="arrow-back" size={22} color="#0B1220" />
           </TouchableOpacity>
+          <QuickRideLogo size="md" />
         </View>
 
-        {/* Form Card overlapping the road cleanly */}
-        <View style={styles.formCard}>
-          <Text style={styles.sectionTitle}>Enter verification code</Text>
-          <Text style={styles.heroSubtitle}>We've sent a 6-digit code to</Text>
-          <View style={styles.phoneRow}>
-            <Text style={styles.phoneText}>{formatE164Display(phone)}</Text>
-            <TouchableOpacity onPress={() => navigation.goBack()}>
-              <Text style={styles.editText}>Edit</Text>
-            </TouchableOpacity>
-          </View>
+        <View style={styles.welcomeBlock}>
+          <Text style={styles.welcomeTitle}>Enter verification{'\n'}code</Text>
+        </View>
+      </View>
 
-          {/* SMS Notification Banner matching 04 qr-otp.png */}
-          {showPreview ? (
-            <View style={styles.smsBanner}>
-              <View style={styles.smsIcon}>
-                <Ionicons name="chatbubble-ellipses" size={16} color={Colors.white} />
-              </View>
-              <View style={styles.smsCopy}>
-                <Text style={styles.smsTitle}>QuickRide</Text>
-                <Text style={styles.smsBody}>Your verification code is {previewCode}</Text>
-              </View>
-            </View>
-          ) : null}
-
-          {/* 6 OTP Input Boxes matching 04 qr-otp.png */}
+      <View style={[styles.sheet, { paddingBottom: Math.max(insets.bottom, 16) }]}>
+        <ScrollView
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+          bounces={false}
+        >
           <View style={styles.otpWrap}>
             <View pointerEvents="none" style={styles.otpRow}>
               {Array.from({ length: 6 }).map((_, index) => {
@@ -186,7 +169,6 @@ export const OtpVerificationScreen: React.FC<Props> = ({ route, navigation }) =>
 
           {error ? <Text style={styles.errorText}>{error}</Text> : null}
 
-          {/* Timer / Resend matching 04 qr-otp.png */}
           <View style={styles.timerRow}>
             {timer > 0 ? (
               <Text style={styles.timerText}>
@@ -217,8 +199,8 @@ export const OtpVerificationScreen: React.FC<Props> = ({ route, navigation }) =>
           <TouchableOpacity onPress={() => navigation.goBack()} style={styles.changePhoneBtn}>
             <Text style={styles.changePhoneText}>Change phone number</Text>
           </TouchableOpacity>
-        </View>
-      </ScrollView>
+        </ScrollView>
+      </View>
     </KeyboardAvoidingView>
   );
 };
@@ -226,100 +208,68 @@ export const OtpVerificationScreen: React.FC<Props> = ({ route, navigation }) =>
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FAF5EE',
+    backgroundColor: Colors.white,
   },
-  scrollContent: {
-    flexGrow: 1,
-    backgroundColor: '#FAF5EE',
+  heroContent: {
+    flex: 1,
+    overflow: 'hidden',
+    backgroundColor: Colors.heroCream,
   },
-  heroWrap: {
+  backdropImage: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
     width: '100%',
-    backgroundColor: '#FAF5EE',
-    position: 'relative',
+    height: '90%',
+  },
+  heroBottomFade: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
+    height: 48,
+  },
+  heroTopRow: {
+    zIndex: 2,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: Layout.spacing.lg,
+    gap: 8,
   },
   backBtn: {
-    position: 'absolute',
-    left: 18,
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    alignItems: 'center',
-    justifyContent: 'center',
-    zIndex: 10,
-  },
-  smsBanner: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: Layout.spacing.md,
-    backgroundColor: '#F9FAFB',
-    borderRadius: 16,
-    padding: 12,
-    gap: 10,
-    borderWidth: 1,
-    borderColor: '#F3E6DC',
-  },
-  smsIcon: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: '#FF5B00',
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  smsCopy: {
-    flex: 1,
-  },
-  smsTitle: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: Colors.textPrimary,
-  },
-  smsBody: {
-    fontSize: 13,
-    color: Colors.gray700,
-    marginTop: 1,
-  },
-  formCard: {
-    flex: 1,
-    backgroundColor: Colors.white,
-    borderTopLeftRadius: 30,
-    borderTopRightRadius: 30,
+  welcomeBlock: {
+    zIndex: 2,
+    marginTop: 10,
     paddingHorizontal: Layout.spacing.xl,
-    paddingTop: Layout.spacing.xl,
-    marginTop: -24,
-    ...Layout.shadows.lg,
+    maxWidth: '86%',
   },
-  sectionTitle: {
-    fontSize: 24,
+  welcomeTitle: {
+    fontSize: 34,
     fontWeight: '800',
-    color: '#0F172A',
-    textAlign: 'center',
-    letterSpacing: -0.4,
+    color: '#0B1220',
+    letterSpacing: -1.1,
+    lineHeight: 40,
   },
-  heroSubtitle: {
-    fontSize: 14,
-    color: '#64748B',
-    marginTop: 6,
-    textAlign: 'center',
-  },
-  phoneRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 6,
-    marginTop: 4,
-    marginBottom: Layout.spacing.lg,
-  },
-  phoneText: {
-    fontSize: 15,
-    fontWeight: '800',
-    color: '#0F172A',
-  },
-  editText: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: '#FF5B00',
-    marginLeft: 4,
+  sheet: {
+    backgroundColor: Colors.white,
+    borderTopLeftRadius: 36,
+    borderTopRightRadius: 36,
+    paddingHorizontal: Layout.spacing.xl,
+    paddingTop: 28,
+    minHeight: '48%',
+    marginTop: -36,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: -8 },
+    shadowOpacity: 0.1,
+    shadowRadius: 20,
+    elevation: 16,
   },
   otpWrap: {
     position: 'relative',
@@ -396,9 +346,8 @@ const styles = StyleSheet.create({
     color: '#FF5B00',
   },
   continueBtn: {
-    borderRadius: 28,
-    height: 56,
-    backgroundColor: '#FF5B00',
+    marginTop: 4,
+    borderRadius: 999,
   },
   orRow: {
     flexDirection: 'row',
@@ -408,13 +357,13 @@ const styles = StyleSheet.create({
   orLine: {
     flex: 1,
     height: 1,
-    backgroundColor: '#E2E8F0',
+    backgroundColor: '#E5E7EB',
   },
   orText: {
     marginHorizontal: Layout.spacing.md,
     fontSize: 12,
     fontWeight: '600',
-    color: '#94A3B8',
+    color: Colors.gray500,
   },
   changePhoneBtn: {
     alignItems: 'center',

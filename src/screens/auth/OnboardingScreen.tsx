@@ -1,5 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { LinearGradient } from 'expo-linear-gradient';
 import type React from 'react';
 import { useRef, useState } from 'react';
 import {
@@ -28,27 +29,23 @@ const SLIDES = [
     titleLine1: 'Your ride,',
     titleHighlight: 'just a tap away.',
     description: 'Reliable rides, anytime, anywhere.\nGet where you need to go, effortlessly.',
-    image: require('../../assets/images/card_1.png'),
+    image: require('../../assets/images/onboarding2.png'),
+    imageWide: false,
   },
   {
     id: '2',
     titleLine1: 'Real-time',
     titleHighlight: 'tracking.',
     description: 'Know exactly where your driver is,\nfrom pickup to drop-off.',
-    image: require('../../assets/images/card_2.png'),
-  },
-  {
-    id: '3',
-    titleLine1: 'Safe & affordable',
-    titleHighlight: 'rides.',
-    description: 'Transparent fares, verified drivers,\nand 24/7 in-ride safety shield.',
-    image: require('../../assets/images/card_3.png'),
+    image: require('../../assets/images/onboarding3.png'),
+    imageWide: true,
   },
 ];
 
 export const OnboardingScreen: React.FC<Props> = ({ navigation }) => {
   const insets = useSafeAreaInsets();
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [carouselHeight, setCarouselHeight] = useState(0);
   const flatListRef = useRef<FlatList>(null);
   const completeOnboarding = useAuthStore((state) => state.completeOnboarding);
 
@@ -72,29 +69,28 @@ export const OnboardingScreen: React.FC<Props> = ({ navigation }) => {
 
   return (
     <View style={[styles.container, { paddingBottom: Math.max(insets.bottom, 16) }]}>
-      {/* Top Bar with Safe Insets, Exact Logo and Skip button */}
-      <View style={[styles.topBar, { paddingTop: insets.top + 8 }]}>
-        <QuickRideLogo size="sm" />
+      <View style={[styles.topBar, { paddingTop: insets.top + 10 }]}>
+        <QuickRideLogo size="md" />
         <TouchableOpacity activeOpacity={0.7} onPress={handleSkip} style={styles.skipBtn}>
           <Text style={styles.skipText}>Skip</Text>
         </TouchableOpacity>
       </View>
 
-      {/* Swipeable Carousel */}
       <FlatList
         ref={flatListRef}
         data={SLIDES}
         keyExtractor={(item) => item.id}
         horizontal
         pagingEnabled
+        style={styles.carousel}
+        onLayout={(e) => setCarouselHeight(e.nativeEvent.layout.height)}
         showsHorizontalScrollIndicator={false}
         onMomentumScrollEnd={(e) => {
           const index = Math.round(e.nativeEvent.contentOffset.x / width);
           setCurrentIndex(index);
         }}
         renderItem={({ item }) => (
-          <View style={styles.slide}>
-            {/* Title & Description exactly matching Screenshots 3, 4, 5 */}
+          <View style={[styles.slide, carouselHeight > 0 ? { height: carouselHeight } : null]}>
             <View style={styles.titleSection}>
               <Text style={styles.mainTitle}>
                 {item.titleLine1}
@@ -104,15 +100,23 @@ export const OnboardingScreen: React.FC<Props> = ({ navigation }) => {
               <Text style={styles.description}>{item.description}</Text>
             </View>
 
-            {/* Exact Card Artwork */}
             <View style={styles.imageCardContainer}>
-              <Image source={item.image} style={styles.cardImage} resizeMode="contain" />
+              <Image
+                source={item.image}
+                style={item.imageWide ? styles.cardImageWide : styles.cardImage}
+                resizeMode="contain"
+              />
+              <LinearGradient
+                colors={['rgba(255,255,255,0)', Colors.white]}
+                locations={[0.15, 1]}
+                style={styles.bottomFade}
+                pointerEvents="none"
+              />
             </View>
           </View>
         )}
       />
 
-      {/* Bottom Controls: Dots & Pill Continue Button */}
       <View style={styles.bottomControls}>
         <View style={styles.dotsRow}>
           {SLIDES.map((_, index) => (
@@ -144,66 +148,78 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: Layout.spacing.lg,
-    paddingBottom: Layout.spacing.sm,
+    paddingBottom: 4,
   },
   skipBtn: {
     paddingVertical: 6,
     paddingHorizontal: 8,
   },
   skipText: {
-    fontSize: 15,
+    fontSize: 16,
     color: '#64748B',
     fontWeight: '600',
   },
+  carousel: {
+    flex: 1,
+  },
   slide: {
     width,
-    paddingHorizontal: Layout.spacing.lg,
-    justifyContent: 'space-between',
-    paddingVertical: Layout.spacing.sm,
   },
   titleSection: {
     alignItems: 'flex-start',
-    marginTop: Layout.spacing.xs,
-    paddingHorizontal: Layout.spacing.xs,
+    paddingHorizontal: Layout.spacing.lg,
+    paddingTop: 4,
+    paddingBottom: 0,
   },
   mainTitle: {
-    fontSize: 32,
+    fontSize: 34,
     fontWeight: '800',
     color: '#0F172A',
     textAlign: 'left',
-    letterSpacing: -0.6,
-    lineHeight: 40,
+    letterSpacing: -0.7,
+    lineHeight: 42,
   },
   highlightText: {
     color: '#FF5500',
   },
   description: {
-    fontSize: 14,
+    fontSize: 16,
     color: '#64748B',
     textAlign: 'left',
-    marginTop: 10,
-    lineHeight: 22,
+    marginTop: 8,
+    lineHeight: 24,
   },
   imageCardContainer: {
+    flex: 1,
     width: '100%',
-    height: 350,
+    overflow: 'hidden',
     alignItems: 'center',
-    justifyContent: 'center',
-    marginVertical: Layout.spacing.sm,
+    justifyContent: 'flex-start',
   },
   cardImage: {
-    width: width * 0.88,
-    height: '100%',
+    width: '118%',
+    height: '112%',
+  },
+  cardImageWide: {
+    width: '100%',
+    height: '128%',
+  },
+  bottomFade: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
+    height: 72,
   },
   bottomControls: {
     paddingHorizontal: Layout.spacing.lg,
-    paddingTop: Layout.spacing.sm,
+    paddingTop: 0,
   },
   dotsRow: {
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: Layout.spacing.xl,
+    marginBottom: 24,
     gap: 8,
   },
   dot: {

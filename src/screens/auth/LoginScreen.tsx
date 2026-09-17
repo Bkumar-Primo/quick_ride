@@ -1,10 +1,10 @@
 import { Ionicons } from '@expo/vector-icons';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { LinearGradient } from 'expo-linear-gradient';
 import type React from 'react';
 import { useState } from 'react';
 import {
   Alert,
-  Dimensions,
   Image,
   KeyboardAvoidingView,
   Platform,
@@ -15,9 +15,11 @@ import {
   View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import Svg, { Path } from 'react-native-svg';
 import { CountryPickerModal } from '../../components/auth/CountryPickerModal';
 import { Button } from '../../components/common/Button';
 import { Input } from '../../components/common/Input';
+import { QuickRideLogo } from '../../components/common/QuickRideLogo';
 import { Colors } from '../../constants/colors';
 import { Layout } from '../../constants/layout';
 import type { AuthStackParamList } from '../../navigation/types';
@@ -34,13 +36,31 @@ import {
 
 type Props = NativeStackScreenProps<AuthStackParamList, 'Login'>;
 
-const { width } = Dimensions.get('window');
-const loginHero = require('../../assets/images/login_hero.png');
-const LOGIN_HERO_ASPECT = 640 / 941;
+const loginHero = require('../../assets/images/loginimage1.png');
+
+const GoogleG = () => (
+  <Svg width={18} height={18} viewBox="0 0 48 48">
+    <Path
+      fill="#FFC107"
+      d="M43.611 20.083H42V20H24v8h11.303c-1.649 4.657-6.08 8-11.303 8-6.627 0-12-5.373-12-12s5.373-12 12-12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.268 4 24 4 12.955 4 4 12.955 4 24s8.955 20 20 20 20-8.955 20-20c0-1.341-.138-2.65-.389-3.917z"
+    />
+    <Path
+      fill="#FF3D00"
+      d="M6.306 14.691l6.571 4.819C14.655 15.108 18.961 12 24 12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.268 4 24 4 16.318 4 9.656 8.337 6.306 14.691z"
+    />
+    <Path
+      fill="#4CAF50"
+      d="M24 44c5.166 0 9.86-1.977 13.409-5.192l-6.19-5.238A11.91 11.91 0 0124 36c-5.202 0-9.619-3.317-11.283-7.946l-6.522 5.025C9.505 39.556 16.227 44 24 44z"
+    />
+    <Path
+      fill="#1976D2"
+      d="M43.611 20.083H42V20H24v8h11.303a12.04 12.04 0 01-4.087 5.571l.003-.002 6.19 5.238C36.971 39.205 44 34 44 24c0-1.341-.138-2.65-.389-3.917z"
+    />
+  </Svg>
+);
 
 export const LoginScreen: React.FC<Props> = ({ navigation }) => {
   const insets = useSafeAreaInsets();
-  const heroHeight = Math.round(width * LOGIN_HERO_ASPECT);
   const [country, setCountry] = useState<Country>(DEFAULT_COUNTRY);
   const [phoneDigits, setPhoneDigits] = useState('');
   const [pickerOpen, setPickerOpen] = useState(false);
@@ -78,21 +98,38 @@ export const LoginScreen: React.FC<Props> = ({ navigation }) => {
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       style={styles.container}
     >
-      <ScrollView
-        contentContainerStyle={[
-          styles.scrollContent,
-          { paddingBottom: Math.max(insets.bottom, 20) },
-        ]}
-        keyboardShouldPersistTaps="handled"
-        bounces={false}
-        showsVerticalScrollIndicator={false}
-      >
-        <View style={styles.heroWrap}>
-          <Image source={loginHero} style={{ width, height: heroHeight }} resizeMode="cover" />
+      <View style={[styles.heroContent, { paddingTop: insets.top + 8 }]}>
+        <Image source={loginHero} style={styles.backdropImage} resizeMode="cover" />
+        <LinearGradient
+          pointerEvents="none"
+          colors={['rgba(255,246,236,0.88)', 'rgba(255,246,236,0.35)', 'rgba(255,246,236,0)']}
+          start={{ x: 0, y: 0.22 }}
+          end={{ x: 0.55, y: 0.55 }}
+          style={StyleSheet.absoluteFill}
+        />
+        <LinearGradient
+          pointerEvents="none"
+          colors={['rgba(255,255,255,0)', 'rgba(255,255,255,0.7)']}
+          style={styles.heroBottomFade}
+        />
+
+        <View style={styles.heroTopRow}>
+          <QuickRideLogo size="md" />
         </View>
 
-        <View style={styles.formCard}>
-          <Text style={styles.inputLabel}>Phone number or Email</Text>
+        <View style={styles.welcomeBlock}>
+          <Text style={styles.welcomeTitle}>Welcome{'\n'}back!</Text>
+          <Text style={styles.welcomeSubtitle}>Log in to continue{'\n'}your journey.</Text>
+        </View>
+      </View>
+
+      <View style={[styles.sheet, { paddingBottom: Math.max(insets.bottom, 16) }]}>
+        <ScrollView
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+          bounces={false}
+        >
+          <Text style={styles.inputLabel}>Phone number</Text>
           <Input
             isPhoneInput
             countryCode={country.dialCode}
@@ -136,7 +173,7 @@ export const LoginScreen: React.FC<Props> = ({ navigation }) => {
               }
               style={styles.socialButton}
             >
-              <Ionicons name="logo-google" size={18} color="#EA4335" />
+              <GoogleG />
               <Text style={styles.socialText}>Continue with Google</Text>
             </TouchableOpacity>
             <TouchableOpacity
@@ -150,8 +187,8 @@ export const LoginScreen: React.FC<Props> = ({ navigation }) => {
               <Text style={styles.socialText}>Continue with Apple</Text>
             </TouchableOpacity>
           </View>
-        </View>
-      </ScrollView>
+        </ScrollView>
+      </View>
 
       <CountryPickerModal
         visible={pickerOpen}
@@ -170,28 +207,67 @@ export const LoginScreen: React.FC<Props> = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.heroCream,
-  },
-  scrollContent: {
-    flexGrow: 1,
-  },
-  heroWrap: {
-    width: '100%',
-    backgroundColor: Colors.heroCream,
-  },
-  heroImage: {
-    width: '100%',
-    height: 340,
-  },
-  formCard: {
-    flex: 1,
     backgroundColor: Colors.white,
-    borderTopLeftRadius: 28,
-    borderTopRightRadius: 28,
+  },
+  heroContent: {
+    flex: 1,
+    overflow: 'hidden',
+    backgroundColor: Colors.heroCream,
+  },
+  backdropImage: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
+    width: '100%',
+    height: '90%',
+  },
+  heroBottomFade: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
+    height: 48,
+  },
+  heroTopRow: {
+    zIndex: 2,
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    paddingHorizontal: Layout.spacing.lg,
+  },
+  welcomeBlock: {
+    zIndex: 2,
+    marginTop: 10,
     paddingHorizontal: Layout.spacing.xl,
-    paddingTop: Layout.spacing.lg,
-    marginTop: -28,
-    ...Layout.shadows.lg,
+    maxWidth: '78%',
+  },
+  welcomeTitle: {
+    fontSize: 40,
+    fontWeight: '800',
+    color: '#0B1220',
+    letterSpacing: -1.1,
+    lineHeight: 46,
+  },
+  welcomeSubtitle: {
+    marginTop: 10,
+    fontSize: 16,
+    lineHeight: 24,
+    color: '#1E293B',
+    fontWeight: '600',
+  },
+  sheet: {
+    backgroundColor: Colors.white,
+    borderTopLeftRadius: 36,
+    borderTopRightRadius: 36,
+    paddingHorizontal: Layout.spacing.xl,
+    paddingTop: 28,
+    minHeight: '48%',
+    marginTop: -36,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: -8 },
+    shadowOpacity: 0.1,
+    shadowRadius: 20,
+    elevation: 16,
   },
   inputLabel: {
     fontSize: 13,
