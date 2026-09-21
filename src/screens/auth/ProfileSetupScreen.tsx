@@ -10,7 +10,6 @@ import {
   StyleSheet,
   Text,
   TextInput,
-  TouchableOpacity,
   View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -71,7 +70,7 @@ export const ProfileSetupScreen: React.FC<Props> = ({ navigation }) => {
       style={styles.container}
     >
       <View style={[styles.topBar, { paddingTop: insets.top + 8 }]}>
-        <TouchableOpacity
+        {/* <TouchableOpacity
           activeOpacity={0.7}
           onPress={() => navigation.goBack()}
           style={styles.backBtn}
@@ -80,7 +79,8 @@ export const ProfileSetupScreen: React.FC<Props> = ({ navigation }) => {
         </TouchableOpacity>
         <TouchableOpacity activeOpacity={0.7} onPress={goToLocation} style={styles.skipBtn}>
           <Text style={styles.skipText}>Skip</Text>
-        </TouchableOpacity>
+        </TouchableOpacity> */}
+        <View style={styles.topBarSpacer} />
       </View>
 
       <ScrollView
@@ -189,6 +189,9 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#64748B',
     fontWeight: '600',
+  },
+  topBarSpacer: {
+    height: 48,
   },
   scrollContent: {
     paddingHorizontal: Layout.spacing.xl,

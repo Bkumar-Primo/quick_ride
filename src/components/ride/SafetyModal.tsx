@@ -1,8 +1,9 @@
 import { Ionicons } from '@expo/vector-icons';
 import type React from 'react';
-import { Alert, Modal, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Modal, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Colors } from '../../constants/colors';
 import { Layout } from '../../constants/layout';
+import { useAppDialog } from '../common/AppDialog';
 import { Button } from '../common/Button';
 
 interface SafetyModalProps {
@@ -18,20 +19,25 @@ export const SafetyModal: React.FC<SafetyModalProps> = ({
   driverName = 'Rahul Sharma',
   vehicleNumber = 'MH 02 CD 4821',
 }) => {
+  const { showDialog } = useAppDialog();
   const handleSOS = () => {
-    Alert.alert(
-      'Emergency SOS Triggered',
-      'Your live GPS coordinates and driver details have been shared with our 24x7 Safety Response Team and your emergency contacts.',
-      [{ text: 'Dismiss', onPress: onClose }],
-    );
+    showDialog({
+      title: 'Emergency SOS Triggered',
+      message:
+        'Your live GPS coordinates and driver details have been shared with our 24x7 Safety Response Team and your emergency contacts.',
+      tone: 'danger',
+      actions: [{ label: 'Dismiss', onPress: onClose }],
+    });
   };
 
   const handleShare = () => {
-    Alert.alert(
-      'Live Trip Link Generated',
-      `Link copied to clipboard: https://quickride.com/track/live-demo\n\nShared with your emergency contact (Mom).`,
-      [{ text: 'Done', onPress: onClose }],
-    );
+    showDialog({
+      title: 'Live Trip Link Generated',
+      message:
+        'Link copied to clipboard: https://quickride.com/track/live-demo\n\nShared with your emergency contact (Mom).',
+      tone: 'success',
+      actions: [{ label: 'Done', onPress: onClose }],
+    });
   };
 
   return (
@@ -67,7 +73,10 @@ export const SafetyModal: React.FC<SafetyModalProps> = ({
               style={styles.optionRow}
               activeOpacity={0.8}
               onPress={() =>
-                Alert.alert('Helpline', 'Connecting to 24/7 Helpline: 1800-QUICK-RIDE')
+                showDialog({
+                  title: 'Helpline',
+                  message: 'Connecting to 24/7 Helpline: 1800-QUICK-RIDE',
+                })
               }
             >
               <View style={[styles.optIcon, { backgroundColor: '#FEF3C7' }]}>

@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import type React from 'react';
-import { Alert, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Colors } from '../../constants/colors';
 import { Layout } from '../../constants/layout';
 import type { DriverInfo, VehicleOption } from '../../types';
@@ -12,10 +12,9 @@ export const DriverRidePanel: React.FC<{
   subtitle?: string;
   showDirections?: boolean;
   onDirections?: () => void;
-}> = ({ driver, vehicle, subtitle, showDirections, onDirections }) => {
-  const callDriver = () =>
-    Alert.alert('Calling driver', `Calling ${driver.name} at ${driver.phone}`);
-  const messageDriver = () => Alert.alert('Message', `Opening chat with ${driver.name}`);
+  onCall?: () => void;
+  onMessage?: () => void;
+}> = ({ driver, vehicle, subtitle, showDirections, onDirections, onCall, onMessage }) => {
   const capacityText = vehicle?.group === 'bike' ? '1 rider' : `${vehicle?.capacity ?? 4} seats`;
   const fallbackIcon: keyof typeof Ionicons.glyphMap =
     vehicle?.group === 'bike' || driver.carCategory === 'Bike'
@@ -45,11 +44,11 @@ export const DriverRidePanel: React.FC<{
           </View>
         </View>
         <View style={styles.actions}>
-          <TouchableOpacity style={styles.action} onPress={callDriver} activeOpacity={0.85}>
+          <TouchableOpacity style={styles.action} onPress={onCall} activeOpacity={0.85}>
             <Ionicons name="call-outline" size={18} color={Colors.gray700} />
             <Text style={styles.actionLabel}>Call</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.action} onPress={messageDriver} activeOpacity={0.85}>
+          <TouchableOpacity style={styles.action} onPress={onMessage} activeOpacity={0.85}>
             <Ionicons name="chatbubble-ellipses-outline" size={18} color={Colors.gray700} />
             <Text style={styles.actionLabel}>Message</Text>
           </TouchableOpacity>

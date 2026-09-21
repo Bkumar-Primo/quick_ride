@@ -1,16 +1,9 @@
 import { Ionicons } from '@expo/vector-icons';
 import type React from 'react';
 import { useState } from 'react';
-import {
-  Alert,
-  SafeAreaView,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import { SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useAppDialog } from '../../components/common/AppDialog';
 import { Button } from '../../components/common/Button';
 import { Colors } from '../../constants/colors';
 import { Layout } from '../../constants/layout';
@@ -25,18 +18,27 @@ export const WalletScreen: React.FC<any> = ({ navigation }) => {
   const selectedPaymentMethod = useUserStore((state) => state.selectedPaymentMethod);
   const setPaymentMethod = useUserStore((state) => state.setPaymentMethod);
   const applyPromo = useRideStore((state) => state.applyPromo);
+  const { showDialog } = useAppDialog();
 
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
 
   const handleTopUp = (amount: number) => {
     addFunds(amount);
-    Alert.alert('Funds Added', `₹${amount} added successfully to your QuickRide Wallet!`);
+    showDialog({
+      title: 'Funds Added',
+      message: `₹${amount} added successfully to your QuickRide Wallet!`,
+      tone: 'success',
+    });
   };
 
   const handleApplyPromo = (promo: any) => {
     applyPromo(promo);
     setCopiedCode(promo.code);
-    Alert.alert('Promo Applied', `Promo code ${promo.code} has been applied to your next ride!`);
+    showDialog({
+      title: 'Promo Applied',
+      message: `Promo code ${promo.code} has been applied to your next ride!`,
+      tone: 'success',
+    });
   };
 
   return (

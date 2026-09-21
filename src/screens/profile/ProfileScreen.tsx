@@ -1,15 +1,8 @@
 import { Ionicons } from '@expo/vector-icons';
 import type React from 'react';
-import {
-  Alert,
-  SafeAreaView,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import { SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useAppDialog } from '../../components/common/AppDialog';
 import { Avatar } from '../../components/common/Avatar';
 import { Colors } from '../../constants/colors';
 import { Layout } from '../../constants/layout';
@@ -23,30 +16,38 @@ export const ProfileScreen: React.FC<any> = ({ navigation }) => {
   const logout = useAuthStore((state) => state.logout);
   const resetDemoAuth = useAuthStore((state) => state.resetDemoAuth);
   const resetRide = useRideStore((state) => state.resetRide);
+  const { showDialog } = useAppDialog();
 
   const handleResetDemo = () => {
-    Alert.alert(
-      'Restart Demo Experience',
-      'This will reset the app back to the Splash & Onboarding screens for client presentation.',
-      [
-        { text: 'Cancel', style: 'cancel' },
+    showDialog({
+      title: 'Restart Demo Experience',
+      message:
+        'This will reset the app back to the Splash & Onboarding screens for client presentation.',
+      tone: 'warning',
+      actions: [
+        { label: 'Cancel', variant: 'secondary' },
         {
-          text: 'Reset Demo',
-          style: 'destructive',
+          label: 'Reset Demo',
+          variant: 'danger',
           onPress: () => {
             resetRide();
             resetDemoAuth();
           },
         },
       ],
-    );
+    });
   };
 
   const handleLogout = () => {
-    Alert.alert('Log Out', 'Are you sure you want to log out?', [
-      { text: 'Cancel', style: 'cancel' },
-      { text: 'Log Out', style: 'destructive', onPress: () => logout() },
-    ]);
+    showDialog({
+      title: 'Log Out',
+      message: 'Are you sure you want to log out?',
+      tone: 'warning',
+      actions: [
+        { label: 'Cancel', variant: 'secondary' },
+        { label: 'Log Out', variant: 'danger', onPress: logout },
+      ],
+    });
   };
 
   return (
@@ -114,10 +115,10 @@ export const ProfileScreen: React.FC<any> = ({ navigation }) => {
             style={styles.menuRow}
             activeOpacity={0.7}
             onPress={() =>
-              Alert.alert(
-                'Saved Places',
-                'Home: Sector 56\nWork: DLF Cyber City\nRecent: Ambience Mall',
-              )
+              showDialog({
+                title: 'Saved Places',
+                message: 'Home: Sector 56\nWork: DLF Cyber City\nRecent: Ambience Mall',
+              })
             }
           >
             <View style={styles.menuLeft}>
@@ -153,7 +154,10 @@ export const ProfileScreen: React.FC<any> = ({ navigation }) => {
             style={styles.menuRow}
             activeOpacity={0.7}
             onPress={() =>
-              Alert.alert('Emergency Contacts', 'Primary Contact: Mom (+91 98200 12345)')
+              showDialog({
+                title: 'Emergency Contacts',
+                message: 'Primary Contact: Mom (+91 98200 12345)',
+              })
             }
           >
             <View style={styles.menuLeft}>

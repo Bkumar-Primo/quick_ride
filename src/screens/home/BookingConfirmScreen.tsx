@@ -48,7 +48,10 @@ export const BookingConfirmScreen: React.FC<Props> = ({ navigation }) => {
           </TouchableOpacity>
         </View>
 
-        <TouchableOpacity style={styles.block} onPress={() => navigation.navigate('PickupConfirm')}>
+        <TouchableOpacity
+          style={styles.block}
+          onPress={() => navigation.navigate('LocationSearch', { mode: 'pickup' })}
+        >
           <Ionicons name="location" size={18} color={Colors.primary} />
           <View style={styles.blockCopy}>
             <Text style={styles.blockLabel}>Pickup</Text>
@@ -103,7 +106,7 @@ export const BookingConfirmScreen: React.FC<Props> = ({ navigation }) => {
           </View>
         </View>
 
-        <View style={styles.payHead}>
+        {/* <View style={styles.payHead}>
           <Text style={styles.payTitle}>Payment method</Text>
           <TouchableOpacity onPress={() => navigation.navigate('Wallet')}>
             <Text style={styles.change}>Change ›</Text>
@@ -121,7 +124,7 @@ export const BookingConfirmScreen: React.FC<Props> = ({ navigation }) => {
             <Text style={styles.defaultText}>Default</Text>
           </View>
           <Ionicons name="chevron-forward" size={16} color={Colors.gray300} />
-        </View>
+        </View> */}
 
         <PrimaryPillButton title="Confirm Ride" onPress={confirm} style={{ marginTop: 16 }} />
         <Text style={styles.legal}>

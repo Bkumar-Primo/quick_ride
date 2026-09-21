@@ -4,6 +4,8 @@ import type React from 'react';
 import { ActiveRideScreen } from '../screens/home/ActiveRideScreen';
 import { BookingConfirmScreen } from '../screens/home/BookingConfirmScreen';
 import { DriverAssignedScreen } from '../screens/home/DriverAssignedScreen';
+import { DriverCallScreen } from '../screens/home/DriverCallScreen';
+import { DriverChatScreen } from '../screens/home/DriverChatScreen';
 import { LocationSearchScreen } from '../screens/home/LocationSearchScreen';
 import { PickupConfirmScreen } from '../screens/home/PickupConfirmScreen';
 import { RideCompletedScreen } from '../screens/home/RideCompletedScreen';
@@ -57,6 +59,8 @@ export const AppNavigator: React.FC = () => {
               component={DriverAssignedScreen}
               options={{ gestureEnabled: false }}
             />
+            <RootStack.Screen name="DriverCall" component={DriverCallScreen} />
+            <RootStack.Screen name="DriverChat" component={DriverChatScreen} />
             <RootStack.Screen
               name="ActiveRide"
               component={ActiveRideScreen}

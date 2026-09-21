@@ -2,16 +2,9 @@ import { Ionicons } from '@expo/vector-icons';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type React from 'react';
 import { useState } from 'react';
-import {
-  Alert,
-  SafeAreaView,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import { SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useAppDialog } from '../../components/common/AppDialog';
 import { Avatar } from '../../components/common/Avatar';
 import { Button } from '../../components/common/Button';
 import { Input } from '../../components/common/Input';
@@ -26,6 +19,7 @@ export const EditProfileScreen: React.FC<Props> = ({ navigation }) => {
   const insets = useSafeAreaInsets();
   const user = useUserStore((state) => state.user);
   const updateProfile = useUserStore((state) => state.updateProfile);
+  const { showDialog } = useAppDialog();
 
   const [name, setName] = useState(user.name);
   const [phone, setPhone] = useState(user.phone);
@@ -37,9 +31,12 @@ export const EditProfileScreen: React.FC<Props> = ({ navigation }) => {
     setTimeout(() => {
       updateProfile({ name, phone, email });
       setLoading(false);
-      Alert.alert('Success', 'Profile updated successfully!', [
-        { text: 'OK', onPress: () => navigation.goBack() },
-      ]);
+      showDialog({
+        title: 'Profile updated',
+        message: 'Your profile details have been saved.',
+        tone: 'success',
+        actions: [{ label: 'Done', onPress: () => navigation.goBack() }],
+      });
     }, 500);
   };
 

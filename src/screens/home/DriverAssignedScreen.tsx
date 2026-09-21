@@ -1,14 +1,14 @@
 import { Ionicons } from '@expo/vector-icons';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type React from 'react';
-import { useState } from 'react';
-import { Alert, StyleSheet, Text, View } from 'react-native';
+import { useEffect, useState } from 'react';
+import { StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useAppDialog } from '../../components/common/AppDialog';
 import { BookingMap } from '../../components/map/BookingMap';
 import { DriverRidePanel } from '../../components/ride/DriverRidePanel';
 import {
   MapControlsColumn,
-  PrimaryPillButton,
   RideSheet,
   RoundIconButton,
   SoftPillButton,
@@ -25,55 +25,46 @@ export const DriverAssignedScreen: React.FC<Props> = ({ navigation }) => {
   const insets = useSafeAreaInsets();
   const activeRide = useRideStore((state) => state.activeRide);
   const currentStatus = useRideStore((state) => state.currentStatus);
-  const simulateDriverArriving = useRideStore((state) => state.simulateDriverArriving);
-  const simulateDriverArrived = useRideStore((state) => state.simulateDriverArrived);
-  const startTrip = useRideStore((state) => state.startTrip);
   const cancelRide = useRideStore((state) => state.cancelRide);
+  const { showDialog } = useAppDialog();
   const [safetyOpen, setSafetyOpen] = useState(false);
+
+  const hasArrived = currentStatus === 'DRIVER_ARRIVED';
+
+  useEffect(() => {
+    if (currentStatus === 'RIDE_IN_PROGRESS') {
+      navigation.replace('ActiveRide');
+    }
+  }, [currentStatus, navigation]);
 
   const driver = activeRide?.driver;
   if (!driver || !activeRide) return null;
 
-  const phase =
-    currentStatus === 'DRIVER_ARRIVED'
-      ? 'arrived'
-      : currentStatus === 'DRIVER_ARRIVING'
-        ? 'arriving'
-        : 'assigned';
-
   const cancel = () => {
-    Alert.alert('Cancel Ride?', 'Are you sure you want to cancel this ride?', [
-      { text: 'Keep ride', style: 'cancel' },
-      {
-        text: 'Cancel ride',
-        style: 'destructive',
-        onPress: () => {
-          cancelRide();
-          navigation.navigate('MainTabs', { screen: 'HomeTab' });
+    showDialog({
+      title: 'Cancel Ride?',
+      message: 'Are you sure you want to cancel this ride?',
+      tone: 'warning',
+      actions: [
+        { label: 'Keep ride', variant: 'secondary' },
+        {
+          label: 'Cancel ride',
+          variant: 'danger',
+          onPress: () => {
+            cancelRide();
+            navigation.navigate('MainTabs', { screen: 'HomeTab' });
+          },
         },
-      },
-    ]);
+      ],
+    });
   };
-
-  const primary =
-    phase === 'assigned'
-      ? { title: "I'll be there", action: simulateDriverArriving }
-      : phase === 'arriving'
-        ? { title: "I'll be there soon", action: simulateDriverArrived }
-        : {
-            title: "I'm Here",
-            action: () => {
-              startTrip();
-              navigation.replace('ActiveRide');
-            },
-          };
 
   return (
     <View style={styles.container}>
-      <BookingMap mode={phase} />
+      <BookingMap mode={hasArrived ? 'arrived' : 'assigned'} />
       <View style={[styles.topBar, { top: insets.top + 8 }]}>
         <RoundIconButton icon="chevron-back" onPress={() => navigation.goBack()} />
-        {phase === 'arriving' ? (
+        {!hasArrived ? (
           <View style={styles.share}>
             <Ionicons name="share-outline" size={16} color={Colors.gray700} />
             <Text style={styles.shareText}>Share trip</Text>
@@ -88,31 +79,23 @@ export const DriverAssignedScreen: React.FC<Props> = ({ navigation }) => {
         <View style={styles.head}>
           <View style={{ flex: 1 }}>
             <Text style={styles.title}>
-              {phase === 'assigned'
-                ? 'Driver is on the way'
-                : phase === 'arriving'
-                  ? 'Driver is arriving'
-                  : 'Your driver has arrived!'}
+              {hasArrived ? 'Your driver has arrived!' : 'Driver is on the way'}
             </Text>
             <Text style={styles.sub}>
-              {phase === 'assigned'
-                ? 'Your driver will arrive in 3 minutes.'
-                : phase === 'arriving'
-                  ? 'Your driver will reach the pickup point in 2 minutes.'
-                  : 'Look for your driver at the pickup point.'}
+              {hasArrived
+                ? 'Your driver has reached the pickup point. Starting your ride now.'
+                : 'Your driver is heading to the pickup point.'}
             </Text>
           </View>
-          {phase === 'arrived' ? (
+          {hasArrived ? (
             <View style={styles.arrivedBadge}>
               <Ionicons name="checkmark-circle" size={16} color={Colors.primary} />
               <Text style={styles.arrivedText}>Arrived</Text>
             </View>
           ) : (
             <View style={styles.etaBox}>
-              <Text style={styles.etaVal}>{phase === 'assigned' ? '3 min' : '2 min'}</Text>
-              <Text style={styles.etaSub}>
-                {phase === 'assigned' ? '1.2 km away' : '700 m away'}
-              </Text>
+              <Text style={styles.etaVal}>3 min</Text>
+              <Text style={styles.etaSub}>1.2 km away</Text>
             </View>
           )}
         </View>
@@ -120,19 +103,21 @@ export const DriverAssignedScreen: React.FC<Props> = ({ navigation }) => {
         <DriverRidePanel
           driver={driver}
           vehicle={activeRide.vehicle}
-          showDirections={phase !== 'assigned'}
-          onDirections={() => Alert.alert('Directions', 'Opening walk directions to pickup.')}
+          onCall={() => navigation.navigate('DriverCall')}
+          onMessage={() => navigation.navigate('DriverChat')}
+          showDirections={hasArrived}
+          onDirections={() =>
+            showDialog({ title: 'Directions', message: 'Opening walk directions to pickup.' })
+          }
         />
 
         <View style={styles.route}>
           <View style={styles.routeCol}>
-            <Text style={styles.pinLabel}>
-              {phase === 'arriving' ? 'Pickup point' : 'Pickup location'}
-            </Text>
+            <Text style={styles.pinLabel}>{hasArrived ? 'Pickup point' : 'Pickup location'}</Text>
             <Text style={styles.place}>{activeRide.pickup.title}</Text>
             <Text style={styles.city}>Gurugram, Haryana</Text>
           </View>
-          {phase === 'assigned' ? (
+          {!hasArrived ? (
             <View style={styles.routeCol}>
               <Text style={styles.pinLabel}>Destination</Text>
               <Text style={styles.place}>{activeRide.destination.title}</Text>
@@ -142,13 +127,12 @@ export const DriverAssignedScreen: React.FC<Props> = ({ navigation }) => {
         </View>
 
         <View style={styles.actions}>
-          {phase !== 'arrived' ? (
+          {!hasArrived ? (
             <SoftPillButton title="Cancel Ride" onPress={cancel} style={{ flex: 1 }} />
           ) : null}
-          <PrimaryPillButton title={primary.title} onPress={primary.action} style={{ flex: 1 }} />
         </View>
-        {phase === 'arrived' ? (
-          <Text style={styles.hint}>Let your driver know you’re at the pickup point.</Text>
+        {hasArrived ? (
+          <Text style={styles.hint}>Your ride will begin automatically in a few seconds.</Text>
         ) : null}
       </RideSheet>
 

@@ -15,6 +15,7 @@ import { Colors } from '../../constants/colors';
 import { Layout } from '../../constants/layout';
 import {
   AMBIENCE_MALL,
+  CURRENT_LOCATION,
   DLF_CYBER_CITY,
   GURUGRAM_HOME,
   IGI_AIRPORT,
@@ -53,13 +54,31 @@ const SUGGESTED = [
 ];
 const SEARCHABLE = [GURUGRAM_HOME, ...POPULAR_DESTINATIONS];
 
-export const LocationSearchScreen: React.FC<Props> = ({ navigation }) => {
+export const LocationSearchScreen: React.FC<Props> = ({ navigation, route }) => {
   const insets = useSafeAreaInsets();
   const pickup = useRideStore((state) => state.pickup);
+  const setPickup = useRideStore((state) => state.setPickup);
   const setDestination = useRideStore((state) => state.setDestination);
   const [query, setQuery] = useState('');
+  const isPickupSelection = route.params?.mode === 'pickup';
+  const returnsToDestination = route.params?.returnTo === 'destination';
 
   const select = (loc: LocationPoint) => {
+    if (isPickupSelection) {
+      setPickup(loc);
+
+      if (returnsToDestination) {
+        navigation.navigate({
+          name: 'LocationSearch',
+          params: { mode: 'destination' },
+          merge: true,
+        });
+      } else {
+        navigation.goBack();
+      }
+      return;
+    }
+
     setDestination(loc);
     navigation.navigate('RoutePreview');
   };
@@ -85,7 +104,13 @@ export const LocationSearchScreen: React.FC<Props> = ({ navigation }) => {
             <RoundIconButton icon="chevron-back" onPress={() => navigation.goBack()} />
             <TouchableOpacity
               style={styles.pickupPill}
-              onPress={() => navigation.navigate('PickupConfirm')}
+              onPress={() =>
+                navigation.navigate({
+                  name: 'LocationSearch',
+                  params: { mode: 'pickup', returnTo: 'destination' },
+                  merge: true,
+                })
+              }
             >
               <Text style={styles.pickupLabel}>Pickup</Text>
               <Text style={styles.pickupValue} numberOfLines={1}>
@@ -98,15 +123,19 @@ export const LocationSearchScreen: React.FC<Props> = ({ navigation }) => {
       }
     >
       <RideSheet style={styles.sheet}>
-        <Text style={styles.hero}>Where to?</Text>
-        <Text style={styles.heroSub}>Enter a destination to see ride options</Text>
+        <Text style={styles.hero}>{isPickupSelection ? 'Where from?' : 'Where to?'}</Text>
+        <Text style={styles.heroSub}>
+          {isPickupSelection
+            ? 'Search for the address where your ride should start'
+            : 'Enter a destination to see ride options'}
+        </Text>
 
         <View style={styles.searchBar}>
           <Ionicons name="search" size={18} color={Colors.primary} />
           <TextInput
             value={query}
             onChangeText={setQuery}
-            placeholder="Search destination"
+            placeholder={isPickupSelection ? 'Search pickup location' : 'Search destination'}
             placeholderTextColor="#F3B48A"
             style={styles.searchInput}
           />
@@ -114,6 +143,17 @@ export const LocationSearchScreen: React.FC<Props> = ({ navigation }) => {
 
         {!isSearching ? (
           <View style={styles.shortcuts}>
+            {isPickupSelection ? (
+              <TouchableOpacity style={styles.shortItem} onPress={() => select(CURRENT_LOCATION)}>
+                <Ionicons name="locate" size={18} color={Colors.primary} />
+                <View style={styles.shortCopy}>
+                  <Text style={styles.shortTitle}>Current location</Text>
+                  <Text style={styles.shortSub} numberOfLines={1}>
+                    Use your device location
+                  </Text>
+                </View>
+              </TouchableOpacity>
+            ) : null}
             <TouchableOpacity style={styles.shortItem} onPress={() => select(GURUGRAM_HOME)}>
               <Ionicons name="home-outline" size={18} color={Colors.primary} />
               <View style={styles.shortCopy}>
@@ -176,7 +216,6 @@ export const LocationSearchScreen: React.FC<Props> = ({ navigation }) => {
 
           <View style={[styles.sectionHead, isSearching && styles.sectionSpaced]}>
             <Text style={styles.sectionTitle}>Recent locations</Text>
-            <Text style={styles.seeAll}>See all</Text>
           </View>
           {RECENT.map((item) => (
             <TouchableOpacity key={item.id} style={styles.listRow} onPress={() => select(item)}>
@@ -189,7 +228,9 @@ export const LocationSearchScreen: React.FC<Props> = ({ navigation }) => {
             </TouchableOpacity>
           ))}
 
-          <Text style={[styles.sectionTitle, styles.sectionSpaced]}>Suggested destinations</Text>
+          <Text style={[styles.sectionTitle, styles.sectionSpaced]}>
+            {isPickupSelection ? 'Suggested pickup locations' : 'Suggested destinations'}
+          </Text>
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}

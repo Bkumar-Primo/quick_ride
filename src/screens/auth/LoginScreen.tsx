@@ -4,7 +4,6 @@ import { LinearGradient } from 'expo-linear-gradient';
 import type React from 'react';
 import { useState } from 'react';
 import {
-  Alert,
   Image,
   KeyboardAvoidingView,
   Platform,
@@ -17,6 +16,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Svg, { Path } from 'react-native-svg';
 import { CountryPickerModal } from '../../components/auth/CountryPickerModal';
+import { useAppDialog } from '../../components/common/AppDialog';
 import { Button } from '../../components/common/Button';
 import { Input } from '../../components/common/Input';
 import { QuickRideLogo } from '../../components/common/QuickRideLogo';
@@ -67,6 +67,7 @@ export const LoginScreen: React.FC<Props> = ({ navigation }) => {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const requestOtp = useAuthStore((state) => state.requestOtp);
+  const { showDialog } = useAppDialog();
 
   const handlePhoneChange = (text: string) => {
     setError('');
@@ -85,7 +86,11 @@ export const LoginScreen: React.FC<Props> = ({ navigation }) => {
     setLoading(false);
 
     if (!result.ok) {
-      Alert.alert('Could not send code', result.error ?? 'Please try again.');
+      showDialog({
+        title: 'Could not send code',
+        message: result.error ?? 'Please try again.',
+        tone: 'warning',
+      });
       return;
     }
 
@@ -169,7 +174,10 @@ export const LoginScreen: React.FC<Props> = ({ navigation }) => {
             <TouchableOpacity
               activeOpacity={0.8}
               onPress={() =>
-                Alert.alert('Continue with phone', 'Phone verification is required to book rides.')
+                showDialog({
+                  title: 'Continue with phone',
+                  message: 'Phone verification is required to book rides.',
+                })
               }
               style={styles.socialButton}
             >
@@ -179,7 +187,10 @@ export const LoginScreen: React.FC<Props> = ({ navigation }) => {
             <TouchableOpacity
               activeOpacity={0.8}
               onPress={() =>
-                Alert.alert('Continue with phone', 'Phone verification is required to book rides.')
+                showDialog({
+                  title: 'Continue with phone',
+                  message: 'Phone verification is required to book rides.',
+                })
               }
               style={styles.socialButton}
             >

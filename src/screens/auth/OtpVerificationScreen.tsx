@@ -4,7 +4,6 @@ import { LinearGradient } from 'expo-linear-gradient';
 import type React from 'react';
 import { useEffect, useRef, useState } from 'react';
 import {
-  Alert,
   Image,
   KeyboardAvoidingView,
   Platform,
@@ -16,6 +15,7 @@ import {
   View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useAppDialog } from '../../components/common/AppDialog';
 import { Button } from '../../components/common/Button';
 import { QuickRideLogo } from '../../components/common/QuickRideLogo';
 import { Colors } from '../../constants/colors';
@@ -39,6 +39,7 @@ export const OtpVerificationScreen: React.FC<Props> = ({ route, navigation }) =>
   const inputRef = useRef<TextInput>(null);
   const verifyOtp = useAuthStore((state) => state.verifyOtp);
   const requestOtp = useAuthStore((state) => state.requestOtp);
+  const { showDialog } = useAppDialog();
 
   useEffect(() => {
     const timeout = setTimeout(() => inputRef.current?.focus(), 400);
@@ -78,7 +79,11 @@ export const OtpVerificationScreen: React.FC<Props> = ({ route, navigation }) =>
     setOtp('');
     const result = await requestOtp(phone);
     if (!result.ok) {
-      Alert.alert('Could not resend code', result.error ?? 'Please try again.');
+      showDialog({
+        title: 'Could not resend code',
+        message: result.error ?? 'Please try again.',
+        tone: 'warning',
+      });
       return;
     }
     setTimer(28);

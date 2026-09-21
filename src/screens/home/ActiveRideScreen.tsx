@@ -1,9 +1,10 @@
 import { Ionicons } from '@expo/vector-icons';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type React from 'react';
-import { useState } from 'react';
-import { Alert, Modal, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useEffect, useState } from 'react';
+import { Modal, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useAppDialog } from '../../components/common/AppDialog';
 import { BookingMap } from '../../components/map/BookingMap';
 import { DriverRidePanel } from '../../components/ride/DriverRidePanel';
 import {
@@ -22,17 +23,19 @@ type Props = NativeStackScreenProps<RootStackParamList, 'ActiveRide'>;
 export const ActiveRideScreen: React.FC<Props> = ({ navigation }) => {
   const insets = useSafeAreaInsets();
   const activeRide = useRideStore((state) => state.activeRide);
-  const completeTrip = useRideStore((state) => state.completeTrip);
+  const currentStatus = useRideStore((state) => state.currentStatus);
+  const { showDialog } = useAppDialog();
   const [safetyOpen, setSafetyOpen] = useState(false);
   const [detailsOpen, setDetailsOpen] = useState(false);
 
+  useEffect(() => {
+    if (currentStatus === 'RIDE_COMPLETED') {
+      navigation.replace('RideCompleted');
+    }
+  }, [currentStatus, navigation]);
+
   const driver = activeRide?.driver;
   if (!activeRide || !driver) return null;
-
-  const endRide = () => {
-    completeTrip();
-    navigation.replace('RideCompleted');
-  };
 
   return (
     <View style={styles.container}>
@@ -69,7 +72,12 @@ export const ActiveRideScreen: React.FC<Props> = ({ navigation }) => {
           </View>
         </TouchableOpacity>
 
-        <DriverRidePanel driver={driver} vehicle={activeRide.vehicle} />
+        <DriverRidePanel
+          driver={driver}
+          vehicle={activeRide.vehicle}
+          onCall={() => navigation.navigate('DriverCall')}
+          onMessage={() => navigation.navigate('DriverChat')}
+        />
 
         <View style={styles.bottomGrid}>
           <View style={styles.routeCol}>
@@ -83,7 +91,13 @@ export const ActiveRideScreen: React.FC<Props> = ({ navigation }) => {
           <View style={styles.sideActions}>
             <TouchableOpacity
               style={styles.sideItem}
-              onPress={() => Alert.alert('Share trip', 'Live trip link copied.')}
+              onPress={() =>
+                showDialog({
+                  title: 'Share trip',
+                  message: 'Live trip link copied.',
+                  tone: 'success',
+                })
+              }
             >
               <Ionicons name="share-outline" size={16} color={Colors.gray700} />
               <Text style={styles.sideText}>Share trip</Text>
@@ -94,15 +108,15 @@ export const ActiveRideScreen: React.FC<Props> = ({ navigation }) => {
             </TouchableOpacity>
             <TouchableOpacity
               style={styles.sideItem}
-              onPress={() => Alert.alert('Help', 'Support will contact you shortly.')}
+              onPress={() =>
+                showDialog({ title: 'Help', message: 'Support will contact you shortly.' })
+              }
             >
               <Ionicons name="headset-outline" size={16} color={Colors.gray700} />
               <Text style={styles.sideText}>Need help?</Text>
             </TouchableOpacity>
           </View>
         </View>
-
-        <SoftPillButton title="End ride" onPress={endRide} />
       </RideSheet>
 
       <Modal visible={detailsOpen} transparent animationType="slide">
@@ -139,7 +153,12 @@ export const ActiveRideScreen: React.FC<Props> = ({ navigation }) => {
               </View>
               <Text style={styles.timeRight}>9:49 AM{'\n'}Est. arrival</Text>
             </View>
-            <DriverRidePanel driver={driver} vehicle={activeRide.vehicle} />
+            <DriverRidePanel
+              driver={driver}
+              vehicle={activeRide.vehicle}
+              onCall={() => navigation.navigate('DriverCall')}
+              onMessage={() => navigation.navigate('DriverChat')}
+            />
             <View style={styles.metrics}>
               <View>
                 <Text style={styles.metricVal}>{activeRide.distanceKm} km</Text>
@@ -158,7 +177,9 @@ export const ActiveRideScreen: React.FC<Props> = ({ navigation }) => {
             </View>
             <SoftPillButton
               title="Share trip details"
-              onPress={() => Alert.alert('Shared', 'Trip details copied.')}
+              onPress={() =>
+                showDialog({ title: 'Shared', message: 'Trip details copied.', tone: 'success' })
+              }
             />
           </RideSheet>
         </View>

@@ -3,8 +3,9 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { LinearGradient } from 'expo-linear-gradient';
 import type React from 'react';
 import { useRef, useState } from 'react';
-import { Alert, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useAppDialog } from '../../components/common/AppDialog';
 import { Button } from '../../components/common/Button';
 import { QuickRideLogo } from '../../components/common/QuickRideLogo';
 import { Colors } from '../../constants/colors';
@@ -21,6 +22,7 @@ export const LocationPermissionScreen: React.FC<Props> = ({ navigation }) => {
   const insets = useSafeAreaInsets();
   const [loading, setLoading] = useState(false);
   const requestingRef = useRef(false);
+  const { showDialog } = useAppDialog();
 
   const goToAllSet = () => {
     navigation.navigate('AllSet');
@@ -42,12 +44,17 @@ export const LocationPermissionScreen: React.FC<Props> = ({ navigation }) => {
       return;
     }
 
-    Alert.alert('Location permission needed', result.message ?? 'Please allow location access.', [
-      { text: 'Not Now', style: 'cancel', onPress: goToAllSet },
-      result.canOpenSettings
-        ? { text: 'Open Settings', onPress: openLocationSettings }
-        : { text: 'Try Again', onPress: () => void handleAllow() },
-    ]);
+    showDialog({
+      title: 'Location permission needed',
+      message: result.message ?? 'Please allow location access.',
+      tone: 'warning',
+      actions: [
+        { label: 'Not Now', variant: 'secondary', onPress: goToAllSet },
+        result.canOpenSettings
+          ? { label: 'Open Settings', onPress: openLocationSettings }
+          : { label: 'Try Again', onPress: () => void handleAllow() },
+      ],
+    });
   };
 
   return (

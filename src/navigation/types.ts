@@ -20,13 +20,20 @@ export type MainTabParamList = {
 export type RootStackParamList = {
   Auth: NavigatorScreenParams<AuthStackParamList>;
   MainTabs: NavigatorScreenParams<MainTabParamList>;
-  LocationSearch: undefined;
+  LocationSearch:
+    | {
+        mode?: 'destination' | 'pickup';
+        returnTo?: 'destination';
+      }
+    | undefined;
   PickupConfirm: undefined;
   RoutePreview: undefined;
   VehicleSelect: undefined;
   BookingConfirm: undefined;
   SearchingDriver: undefined;
   DriverAssigned: undefined;
+  DriverCall: undefined;
+  DriverChat: undefined;
   ActiveRide: undefined;
   RideCompleted: undefined;
   EditProfile: undefined;

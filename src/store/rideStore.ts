@@ -9,6 +9,10 @@ import {
 import type { ActiveRide, LocationPoint, PromoCode, RideStatus, VehicleOption } from '../types';
 import { useUserStore } from './userStore';
 
+const DRIVER_ARRIVAL_DELAY_MS = 4500;
+const TRIP_START_DELAY_MS = 4500;
+const RIDE_END_DELAY_MS = 10000;
+
 interface RideState {
   currentStatus: RideStatus;
   pickup: LocationPoint;
@@ -86,7 +90,7 @@ export const useRideStore = create<RideState>((set, get) => ({
       searchCountdown: 3,
     });
 
-    // Auto-advance simulation after 2.8 seconds so the demo is snappy and wowing!
+    // Progress the driver lifecycle automatically; riders should never operate driver controls.
     setTimeout(() => {
       const current = get().currentStatus;
       if (current === 'SEARCHING_DRIVER') {
@@ -98,6 +102,17 @@ export const useRideStore = create<RideState>((set, get) => ({
             driver: driverForVehicle(selectedVehicle),
           },
         });
+
+        setTimeout(() => {
+          if (get().currentStatus !== 'DRIVER_ASSIGNED') return;
+          get().simulateDriverArrived();
+
+          setTimeout(() => {
+            if (get().currentStatus === 'DRIVER_ARRIVED') {
+              get().startTrip();
+            }
+          }, TRIP_START_DELAY_MS);
+        }, DRIVER_ARRIVAL_DELAY_MS);
       }
     }, 2800);
   },
@@ -136,6 +151,13 @@ export const useRideStore = create<RideState>((set, get) => ({
         status: 'RIDE_IN_PROGRESS',
       },
     });
+
+    // The driver ends the simulated ride, rather than exposing that control to the rider.
+    setTimeout(() => {
+      if (get().currentStatus === 'RIDE_IN_PROGRESS') {
+        get().completeTrip();
+      }
+    }, RIDE_END_DELAY_MS);
   },
 
   completeTrip: (rating = 5, driverTip = 0, reviewTags = ['Clean Car', 'Polite Driver']) => {

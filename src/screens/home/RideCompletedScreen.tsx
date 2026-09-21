@@ -1,8 +1,9 @@
 import { Ionicons } from '@expo/vector-icons';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type React from 'react';
-import { Alert, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useAppDialog } from '../../components/common/AppDialog';
 import { BookingMap } from '../../components/map/BookingMap';
 import { DriverRidePanel } from '../../components/ride/DriverRidePanel';
 import {
@@ -21,6 +22,7 @@ export const RideCompletedScreen: React.FC<Props> = ({ navigation }) => {
   const insets = useSafeAreaInsets();
   const activeRide = useRideStore((state) => state.activeRide);
   const resetRide = useRideStore((state) => state.resetRide);
+  const { showDialog } = useAppDialog();
   const driver = activeRide?.driver;
   const fare = activeRide?.fareBreakdown;
 
@@ -90,7 +92,14 @@ export const RideCompletedScreen: React.FC<Props> = ({ navigation }) => {
           </View>
         </View>
 
-        {driver ? <DriverRidePanel driver={driver} vehicle={activeRide?.vehicle} /> : null}
+        {driver ? (
+          <DriverRidePanel
+            driver={driver}
+            vehicle={activeRide?.vehicle}
+            onCall={() => navigation.navigate('DriverCall')}
+            onMessage={() => navigation.navigate('DriverChat')}
+          />
+        ) : null}
 
         <Text style={styles.fareTitle}>Fare details</Text>
         <View style={styles.fareRow}>
@@ -109,7 +118,13 @@ export const RideCompletedScreen: React.FC<Props> = ({ navigation }) => {
         <View style={styles.actions}>
           <SoftPillButton
             title="View receipt"
-            onPress={() => Alert.alert('Receipt', 'Receipt will be emailed to you.')}
+            onPress={() =>
+              showDialog({
+                title: 'Receipt',
+                message: 'Receipt will be emailed to you.',
+                tone: 'success',
+              })
+            }
             style={{ flex: 1 }}
           />
           <PrimaryPillButton title="Done" onPress={done} style={{ flex: 1 }} />

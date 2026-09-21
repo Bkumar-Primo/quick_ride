@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type React from 'react';
-import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Image, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Button } from '../../components/common/Button';
 import { Colors } from '../../constants/colors';
@@ -31,20 +31,21 @@ const BENEFITS = [
   },
 ];
 
-export const AllSetScreen: React.FC<Props> = ({ navigation }) => {
+export const AllSetScreen: React.FC<Props> = () => {
   const insets = useSafeAreaInsets();
   const grantLocation = useAuthStore((state) => state.grantLocation);
 
   return (
     <View style={styles.container}>
       <View style={[styles.topBar, { paddingTop: insets.top + 8 }]}>
-        <TouchableOpacity
+        {/* <TouchableOpacity
           activeOpacity={0.7}
           onPress={() => navigation.goBack()}
           style={styles.backBtn}
         >
           <Ionicons name="arrow-back" size={22} color="#1E1B4B" />
-        </TouchableOpacity>
+        </TouchableOpacity> */}
+        <View style={styles.topBarSpacer} />
       </View>
 
       <ScrollView
@@ -105,6 +106,9 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.12,
     shadowRadius: 16,
     elevation: 8,
+  },
+  topBarSpacer: {
+    height: 48,
   },
   scrollContent: {
     paddingHorizontal: Layout.spacing.xl,

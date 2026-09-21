@@ -12,7 +12,6 @@ export const MOCK_VEHICLES: VehicleOption[] = [
     basePrice: 35,
     price: 49,
     etaMinutes: 2,
-    badge: 'Fastest',
     badgeColor: '#FF6B00',
     iconName: 'bicycle',
     imageUrl: images.bikeLite,
@@ -29,6 +28,7 @@ export const MOCK_VEHICLES: VehicleOption[] = [
     etaMinutes: 3,
     iconName: 'bicycle',
     imageUrl: images.bikePlus,
+    badge: 'Fastest',
   },
   {
     id: 'veh-auto',

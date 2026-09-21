@@ -99,7 +99,7 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
   };
 
   const handleChangePickup = () => {
-    navigation.navigate('PickupConfirm');
+    navigation.navigate('LocationSearch', { mode: 'pickup' });
   };
 
   return (
@@ -186,9 +186,9 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
 
           <View style={styles.popularHeader}>
             <Text style={styles.popularTitle}>Popular destinations</Text>
-            <TouchableOpacity activeOpacity={0.8} onPress={handleSearchPress}>
+            {/* <TouchableOpacity activeOpacity={0.8} onPress={handleSearchPress}>
               <Text style={styles.seeAll}>See all</Text>
-            </TouchableOpacity>
+            </TouchableOpacity> */}
           </View>
 
           <ScrollView
