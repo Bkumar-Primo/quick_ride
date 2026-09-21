@@ -53,7 +53,7 @@ export const EditProfileScreen: React.FC<Props> = ({ navigation }) => {
 
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         {/* Avatar Photo with Change Badge */}
-        <View style={styles.avatarSection}>
+        {/* <View style={styles.avatarSection}>
           <View style={styles.avatarWrapper}>
             <Avatar name={user.name} size={90} />
             <TouchableOpacity style={styles.cameraBtn}>
@@ -61,7 +61,7 @@ export const EditProfileScreen: React.FC<Props> = ({ navigation }) => {
             </TouchableOpacity>
           </View>
           <Text style={styles.changePhotoText}>Change Profile Photo</Text>
-        </View>
+        </View> */}
 
         {/* Inputs */}
         <View style={styles.form}>

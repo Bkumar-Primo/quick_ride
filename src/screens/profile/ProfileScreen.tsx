@@ -132,7 +132,7 @@ export const ProfileScreen: React.FC<any> = ({ navigation }) => {
 
           <View style={styles.rowDivider} />
 
-          <TouchableOpacity
+          {/* <TouchableOpacity
             style={styles.menuRow}
             activeOpacity={0.7}
             onPress={() => navigation.navigate('Wallet')}
@@ -144,7 +144,7 @@ export const ProfileScreen: React.FC<any> = ({ navigation }) => {
               <Text style={styles.menuLabel}>Payment & Wallet</Text>
             </View>
             <Ionicons name="chevron-forward" size={18} color={Colors.gray400} />
-          </TouchableOpacity>
+          </TouchableOpacity> */}
         </View>
 
         {/* Safety & Preferences */}
