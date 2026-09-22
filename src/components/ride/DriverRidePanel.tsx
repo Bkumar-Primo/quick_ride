@@ -1,10 +1,12 @@
 import { Ionicons } from '@expo/vector-icons';
 import type React from 'react';
 import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { images } from '../../../assets';
 import { Colors } from '../../constants/colors';
 import { Layout } from '../../constants/layout';
 import type { DriverInfo, VehicleOption } from '../../types';
 import { Avatar } from '../common/Avatar';
+import { mapIconForVehicle } from '../map/MapVehicleMarker';
 
 export const DriverRidePanel: React.FC<{
   driver: DriverInfo;
@@ -16,12 +18,7 @@ export const DriverRidePanel: React.FC<{
   onMessage?: () => void;
 }> = ({ driver, vehicle, subtitle, showDirections, onDirections, onCall, onMessage }) => {
   const capacityText = vehicle?.group === 'bike' ? '1 rider' : `${vehicle?.capacity ?? 4} seats`;
-  const fallbackIcon: keyof typeof Ionicons.glyphMap =
-    vehicle?.group === 'bike' || driver.carCategory === 'Bike'
-      ? 'bicycle'
-      : vehicle?.group === 'auto' || driver.carCategory === 'Auto'
-        ? 'bus-outline'
-        : 'car';
+  const iconKey = mapIconForVehicle(vehicle || { id: 'veh-bike', group: 'bike' });
 
   return (
     <View>
@@ -56,21 +53,14 @@ export const DriverRidePanel: React.FC<{
       </View>
 
       <View style={styles.carRow}>
-        {driver.carImageUrl ? (
-          <Image
-            source={{ uri: driver.carImageUrl }}
-            style={styles.carImage}
-            resizeMode="contain"
-          />
-        ) : (
-          <View style={styles.carFallback}>
-            <Ionicons name={fallbackIcon} size={28} color={Colors.gray400} />
-          </View>
-        )}
+        <View style={styles.carFallback}>
+          <Image source={images[iconKey]} style={styles.carImage} resizeMode="contain" />
+        </View>
         <View style={styles.carCopy}>
           <Text style={styles.carModel}>{driver.carModel}</Text>
           <Text style={styles.carMeta}>
-            {driver.carColor} · {capacityText} · {driver.carCategory || vehicle?.name || 'premium'}
+            {driver.carColor} · {capacityText} ·{' '}
+            {driver.carCategory || vehicle?.name || 'Quick Ride'}
           </Text>
           <View style={styles.plate}>
             <Text style={styles.plateText}>{driver.carNumber}</Text>

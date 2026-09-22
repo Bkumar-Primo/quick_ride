@@ -1,8 +1,13 @@
 import type React from 'react';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Animated, StyleSheet, Text, View } from 'react-native';
 import Svg, { Circle, Defs, LinearGradient, Path, Stop } from 'react-native-svg';
 import { Colors } from '../../constants/colors';
+import {
+  GEOAPIFY_APPROACH_ROADS,
+  GEOAPIFY_TRIP_ROADS,
+  getInterpolatedGpsPoint,
+} from '../../services/routingService';
 import { useRideStore } from '../../store/rideStore';
 import type { RideGroup } from '../../types';
 import { type MapVehicleIcon, MapVehicleLayer, mapIconForVehicle } from './MapVehicleMarker';
@@ -61,10 +66,38 @@ const toPercent = (x: number, y: number) => ({
   y: (y / 520) * 100,
 });
 
+/**
+ * Projects Geoapify GPS coordinates [longitude, latitude] into 400x520 SVG Canvas screen space.
+ * Maps exact road points from Geoapify so vehicle moves strictly on OpenStreetMap roads.
+ */
+function gpsToViewBox(lon: number, lat: number): { x: number; y: number } {
+  let x: number;
+  let y: number;
+
+  if (lon <= 76.6856152) {
+    const tLon = (lon - 76.682954) / (76.6856152 - 76.682954);
+    x = 120 + tLon * (185 - 120);
+  } else {
+    const tLon = (lon - 76.6856152) / (76.7206665 - 76.6856152);
+    x = 185 + tLon * (340 - 185);
+  }
+
+  if (lat >= 30.7060817) {
+    const tLat = (30.7093383 - lat) / (30.7093383 - 30.7060817);
+    y = 90 + tLat * (170 - 90);
+  } else {
+    const tLat = (30.7060817 - lat) / (30.7060817 - 30.677714);
+    y = 170 + tLat * (390 - 170);
+  }
+
+  return { x, y };
+}
+
 export const BookingMap: React.FC<{ mode: BookingMapMode }> = ({ mode }) => {
   const pulseAnim = useRef(new Animated.Value(1)).current;
   const selectedVehicle = useRideStore((state) => state.selectedVehicle);
   const selectedIcon = mapIconForVehicle(selectedVehicle);
+  const [trackProgress, setTrackProgress] = useState(0);
 
   useEffect(() => {
     const loop = Animated.loop(
@@ -85,30 +118,69 @@ export const BookingMap: React.FC<{ mode: BookingMapMode }> = ({ mode }) => {
     return () => loop.stop();
   }, [pulseAnim]);
 
-  const showRoute = [
-    'search',
-    'preview',
-    'choose',
-    'confirm',
-    'assigned',
-    'arriving',
-    'inprogress',
-  ].includes(mode);
-  const dashed = mode === 'assigned';
-  const carPos =
-    mode === 'search'
-      ? { x: 210, y: 168 }
-      : mode === 'preview' || mode === 'choose' || mode === 'confirm'
-        ? { x: 210, y: 175 }
-        : mode === 'assigned'
-          ? { x: 250, y: 130 }
-          : mode === 'arriving'
-            ? { x: 208, y: 168 }
-            : mode === 'arrived'
-              ? { x: 200, y: 198 }
-              : mode === 'inprogress'
-                ? { x: 230, y: 195 }
-                : null;
+  // Smooth 60fps path progress animation without fluctuation
+  useEffect(() => {
+    let animationFrameId: number;
+    let startTime: number | null = null;
+    const duration =
+      mode === 'assigned' || mode === 'arriving' ? 14000 : mode === 'inprogress' ? 30000 : 0;
+
+    if (duration > 0) {
+      setTrackProgress(0);
+      const step = (timestamp: number) => {
+        if (!startTime) startTime = timestamp;
+        const elapsed = timestamp - startTime;
+        const progress = Math.min(1, elapsed / duration);
+        setTrackProgress(progress);
+        if (progress < 1) {
+          animationFrameId = requestAnimationFrame(step);
+        }
+      };
+      animationFrameId = requestAnimationFrame(step);
+      return () => cancelAnimationFrame(animationFrameId);
+    } else {
+      setTrackProgress(0);
+    }
+  }, [mode]);
+
+  const showTripRoute = mode === 'inprogress';
+  const showDriverApproachRoute = ['assigned', 'arriving'].includes(mode);
+
+  let carPos: { x: number; y: number } | null = null;
+  let vehicleRotation = 0;
+  let remainingPathPoints: { x: number; y: number }[] = [];
+  let currentDriverLat: number | undefined;
+  let currentDriverLon: number | undefined;
+
+  if (['search', 'preview', 'choose', 'confirm'].includes(mode)) {
+    carPos = gpsToViewBox(76.6856152, 30.7060817);
+    vehicleRotation = 0;
+  } else if (mode === 'assigned' || mode === 'arriving') {
+    const res = getInterpolatedGpsPoint(GEOAPIFY_APPROACH_ROADS, trackProgress);
+    currentDriverLat = res.lat;
+    currentDriverLon = res.lon;
+    vehicleRotation = res.angle;
+    carPos = gpsToViewBox(res.lon, res.lat);
+    remainingPathPoints = res.remainingGpsPoints.map(([lon, lat]) => gpsToViewBox(lon, lat));
+  } else if (mode === 'arrived') {
+    currentDriverLat = 30.7060817;
+    currentDriverLon = 76.6856152;
+    carPos = gpsToViewBox(currentDriverLon, currentDriverLat);
+    vehicleRotation = 0;
+  } else if (mode === 'inprogress') {
+    const res = getInterpolatedGpsPoint(GEOAPIFY_TRIP_ROADS, trackProgress);
+    currentDriverLat = res.lat;
+    currentDriverLon = res.lon;
+    vehicleRotation = res.angle;
+    carPos = gpsToViewBox(res.lon, res.lat);
+    remainingPathPoints = res.remainingGpsPoints.map(([lon, lat]) => gpsToViewBox(lon, lat));
+  }
+
+  // Smoothly center static map view as driver navigates long distances (~300m threshold)
+  const displayLat =
+    currentDriverLat !== undefined ? Math.round(currentDriverLat * 350) / 350 : undefined;
+  const displayLon =
+    currentDriverLon !== undefined ? Math.round(currentDriverLon * 350) / 350 : undefined;
 
   const nearby =
     mode === 'pickup'
@@ -119,11 +191,24 @@ export const BookingMap: React.FC<{ mode: BookingMapMode }> = ({ mode }) => {
           ? GROUP_NEARBY[selectedVehicle.group]
           : [];
 
-  const activeMarker = carPos ? [{ icon: selectedIcon, ...toPercent(carPos.x, carPos.y) }] : [];
+  const activeMarker = carPos
+    ? [{ icon: selectedIcon, rotation: vehicleRotation, ...toPercent(carPos.x, carPos.y) }]
+    : [];
+
+  const remainingKm = (6.8 * Math.max(0, 1 - trackProgress)).toFixed(1);
+
+  // Generate SVG path string along actual road waypoints ahead of vehicle
+  const headingSvgPath =
+    remainingPathPoints.length > 1
+      ? remainingPathPoints
+          .map((p, index) => `${index === 0 ? 'M' : 'L'} ${p.x.toFixed(1)},${p.y.toFixed(1)}`)
+          .join(' ')
+      : '';
 
   return (
     <View style={styles.container}>
-      <StaticMapBackground />
+      <StaticMapBackground latitude={displayLat} longitude={displayLon} />
+
       <Svg
         pointerEvents="none"
         preserveAspectRatio="xMidYMid slice"
@@ -131,20 +216,38 @@ export const BookingMap: React.FC<{ mode: BookingMapMode }> = ({ mode }) => {
         viewBox="0 0 400 520"
       >
         <Defs>
-          <LinearGradient id="routeGrad" x1="0" y1="0" x2="1" y2="0">
+          <LinearGradient id="routeGrad" x1="0" y1="0" x2="1" y2="1">
             <Stop offset="0%" stopColor="#FF8A00" />
             <Stop offset="100%" stopColor="#FF5500" />
           </LinearGradient>
+          <LinearGradient id="approachGrad" x1="0" y1="0" x2="1" y2="1">
+            <Stop offset="0%" stopColor="#2563EB" />
+            <Stop offset="100%" stopColor="#3B82F6" />
+          </LinearGradient>
         </Defs>
 
-        {showRoute && (
+        {/* Heading Trip Road Path: Car Position -> CP 67 Mall along Sector Roads */}
+        {showTripRoute && headingSvgPath.length > 0 && (
           <Path
-            d="M 92,150 C 150,148 190,190 250,186 C 300,182 330,150 348,142"
+            d={headingSvgPath}
             fill="none"
             stroke="url(#routeGrad)"
             strokeWidth="6"
             strokeLinecap="round"
-            strokeDasharray={dashed ? '8,8' : undefined}
+            strokeLinejoin="round"
+          />
+        )}
+
+        {/* Heading Approach Road Path: Driver Position -> SM Heights */}
+        {showDriverApproachRoute && headingSvgPath.length > 0 && (
+          <Path
+            d={headingSvgPath}
+            fill="none"
+            stroke="url(#approachGrad)"
+            strokeWidth="5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeDasharray="6,6"
           />
         )}
 
@@ -164,18 +267,35 @@ export const BookingMap: React.FC<{ mode: BookingMapMode }> = ({ mode }) => {
 
       <MapVehicleLayer markers={[...nearby, ...activeMarker]} />
 
+      {/* Driver Origin Marker (Finvasia) */}
+      {(mode === 'assigned' || mode === 'arriving') && (
+        <View style={[styles.locationBadge, { top: '15%', left: '16%' }]}>
+          <Text style={styles.badgeTitle}>Finvasia</Text>
+          <Text style={styles.badgeSub}>Driver origin</Text>
+        </View>
+      )}
+
+      {/* Pickup Marker (SM Heights) */}
       {(mode === 'pickup' ||
         mode === 'searching' ||
         mode === 'assigned' ||
-        mode === 'arriving') && (
-        <View style={[styles.pinWrap, mode === 'assigned' ? styles.pinLeft : styles.pinCenter]}>
+        mode === 'arriving' ||
+        mode === 'arrived' ||
+        mode === 'preview' ||
+        mode === 'choose' ||
+        mode === 'confirm' ||
+        mode === 'inprogress') && (
+        <View
+          style={[
+            styles.pinWrap,
+            mode === 'assigned' || mode === 'arriving'
+              ? { top: '30%', left: '38%' }
+              : styles.pinCenter,
+          ]}
+        >
           <View style={styles.bubble}>
             <Text style={styles.bubbleText}>
-              {mode === 'searching'
-                ? 'Your pickup'
-                : mode === 'pickup'
-                  ? 'Pickup here'
-                  : 'Your pickup'}
+              {mode === 'searching' ? 'Your pickup' : 'SM Heights'}
             </Text>
           </View>
           <View style={styles.orangeHalo} />
@@ -183,6 +303,7 @@ export const BookingMap: React.FC<{ mode: BookingMapMode }> = ({ mode }) => {
         </View>
       )}
 
+      {/* User blue dot animation */}
       {(mode === 'pickup' ||
         mode === 'preview' ||
         mode === 'assigned' ||
@@ -191,7 +312,7 @@ export const BookingMap: React.FC<{ mode: BookingMapMode }> = ({ mode }) => {
         <View style={[styles.youWrap, mode === 'pickup' ? styles.youLower : styles.youNearPin]}>
           {mode === 'pickup' && (
             <View style={styles.bubble}>
-              <Text style={styles.bubbleText}>Your location</Text>
+              <Text style={styles.bubbleText}>SM Heights</Text>
             </View>
           )}
           <Animated.View
@@ -210,48 +331,46 @@ export const BookingMap: React.FC<{ mode: BookingMapMode }> = ({ mode }) => {
         </View>
       )}
 
+      {/* Destination Flag (CP 67 Mall) */}
       {(mode === 'preview' || mode === 'choose' || mode === 'confirm' || mode === 'inprogress') && (
-        <>
-          <View style={styles.pickupFlag}>
-            <Text style={styles.flagText}>{mode === 'inprogress' ? '' : 'Pickup'}</Text>
-          </View>
-          <View style={styles.destFlag}>
-            <Text style={styles.destFlagText}>Destination</Text>
-          </View>
-        </>
+        <View style={styles.destFlag}>
+          <Text style={styles.destFlagText}>CP 67 Mall</Text>
+        </View>
       )}
 
-      {(mode === 'preview' || mode === 'inprogress') && (
+      {/* ETA & Status Pills */}
+      {(mode === 'preview' || mode === 'choose') && (
         <View style={styles.etaBubble}>
-          <Text style={styles.etaMain}>{mode === 'inprogress' ? '2.5 km left' : '12 min'}</Text>
-          {mode === 'preview' && <Text style={styles.etaSub}>6.8 km</Text>}
+          <Text style={styles.etaMain}>12 min</Text>
+          <Text style={styles.etaSub}>6.8 km to CP 67 Mall</Text>
         </View>
       )}
 
       {mode === 'assigned' && (
         <View style={styles.carEta}>
-          <Text style={styles.carEtaLabel}>Arriving in</Text>
-          <Text style={styles.carEtaVal}>3 min</Text>
+          <Text style={styles.carEtaLabel}>Heading to SM Heights</Text>
+          <Text style={styles.carEtaVal}>3 min away</Text>
         </View>
       )}
 
       {mode === 'arriving' && (
         <View style={styles.carEta}>
-          <Text style={styles.carEtaLabel}>Arriving in</Text>
-          <Text style={styles.carEtaVal}>2 min</Text>
-          <Text style={styles.etaSub}>700 m away</Text>
+          <Text style={styles.carEtaLabel}>Finvasia ➔ SM Heights</Text>
+          <Text style={styles.carEtaVal}>{trackProgress > 0.6 ? '1 min away' : '2 min away'}</Text>
+          <Text style={styles.etaSub}>Driver approaching pickup</Text>
         </View>
       )}
 
       {mode === 'arrived' && (
         <View style={styles.arrivedBanner}>
-          <Text style={styles.arrivedBannerText}>Your driver{'\n'}has arrived!</Text>
+          <Text style={styles.arrivedBannerText}>Driver arrived at SM Heights!</Text>
         </View>
       )}
 
       {mode === 'inprogress' && (
         <View style={styles.onWayPill}>
-          <Text style={styles.onWayText}>On the way{'\n'}to destination</Text>
+          <Text style={styles.onWayText}>Trip in progress to CP 67 Mall</Text>
+          <Text style={styles.etaSub}>{remainingKm} km left</Text>
         </View>
       )}
     </View>
@@ -452,6 +571,25 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontWeight: '600',
     color: Colors.primary,
+  },
+  locationBadge: {
+    position: 'absolute',
+    backgroundColor: '#2563EB',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 8,
+    alignItems: 'center',
+    ...overlayShadow,
+  },
+  badgeTitle: {
+    color: Colors.white,
+    fontSize: 11,
+    fontWeight: '700',
+  },
+  badgeSub: {
+    color: 'rgba(255,255,255,0.85)',
+    fontSize: 9,
+    fontWeight: '500',
   },
 });
 

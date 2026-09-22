@@ -9,9 +9,9 @@ import {
 import type { ActiveRide, LocationPoint, PromoCode, RideStatus, VehicleOption } from '../types';
 import { useUserStore } from './userStore';
 
-const DRIVER_ARRIVAL_DELAY_MS = 4500;
-const TRIP_START_DELAY_MS = 4500;
-const RIDE_END_DELAY_MS = 10000;
+const DRIVER_ARRIVAL_DELAY_MS = 14000;
+const TRIP_START_DELAY_MS = 3500;
+const RIDE_END_DELAY_MS = 30000;
 
 export type FlowStep =
   | 'IDLE'

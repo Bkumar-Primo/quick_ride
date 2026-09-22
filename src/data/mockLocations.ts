@@ -1,13 +1,34 @@
 import type { LocationPoint } from '../types';
 
 export const CURRENT_LOCATION: LocationPoint = {
-  id: 'loc-current',
-  title: 'MG Road, Sector 25',
-  subtitle: 'Gurugram, Haryana 122002',
-  address: 'MG Road, Sector 25, Gurugram, Haryana 122002',
-  latitude: 28.4595,
-  longitude: 77.0266,
+  id: 'loc-sm-heights',
+  title: 'SM Heights',
+  subtitle: 'Sector 74, Mohali, Punjab',
+  address: 'SM Heights, Sector 74, Sahibzada Ajit Singh Nagar, Punjab 160055',
+  latitude: 30.7060817,
+  longitude: 76.6856152,
   type: 'recent',
+};
+
+export const FINVASIA_LOCATION: LocationPoint = {
+  id: 'loc-finvasia',
+  title: 'Finvasia',
+  subtitle: 'Sector 74, Mohali, Punjab',
+  address: 'Finvasia, Sector 74, Sahibzada Ajit Singh Nagar, Punjab 160055',
+  latitude: 30.7093383,
+  longitude: 76.682954,
+  type: 'recent',
+};
+
+export const CP_67_MALL: LocationPoint = {
+  id: 'loc-cp67-mall',
+  title: 'CP 67 Mall',
+  subtitle: 'Sector 67, Mohali, Punjab',
+  address:
+    'CP 67 Mall, International Airport Road, Sector 67, Sahibzada Ajit Singh Nagar, Punjab 160062',
+  latitude: 30.677714,
+  longitude: 76.7206665,
+  type: 'popular',
 };
 
 export const MG_ROAD_METRO: LocationPoint = {
@@ -97,6 +118,8 @@ export const IGI_AIRPORT: LocationPoint = {
 };
 
 export const POPULAR_DESTINATIONS: LocationPoint[] = [
+  CP_67_MALL,
+  FINVASIA_LOCATION,
   DLF_CYBER_CITY,
   AMBIENCE_MALL,
   IGI_AIRPORT,

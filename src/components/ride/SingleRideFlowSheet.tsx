@@ -97,7 +97,15 @@ export const SingleRideFlowSheet: React.FC<Props> = ({
 
   const maxSheetHeight = SCREEN_HEIGHT - (insets.top + 90);
 
-  // Fixed snap point per step. ROUTE_PREVIEW uses 78% (Cab height) so sheet never goes down when changing options.
+  const isRideConfirmed = useMemo(
+    () =>
+      ['DRIVER_ASSIGNED', 'DRIVER_ARRIVING', 'DRIVER_ARRIVED', 'RIDE_IN_PROGRESS'].includes(
+        flowStep,
+      ),
+    [flowStep],
+  );
+
+  // Fixed snap point per step when unconfirmed. When confirmed, default to minimized 25% (expandable to 54%).
   const stepSnapPoint = useMemo(() => {
     switch (flowStep) {
       case 'IDLE':
@@ -116,7 +124,7 @@ export const SingleRideFlowSheet: React.FC<Props> = ({
       case 'DRIVER_ARRIVING':
       case 'DRIVER_ARRIVED':
       case 'RIDE_IN_PROGRESS':
-        return '54%';
+        return '25%';
       case 'RIDE_COMPLETED':
         return '54%';
       default:
@@ -124,12 +132,19 @@ export const SingleRideFlowSheet: React.FC<Props> = ({
     }
   }, [flowStep]);
 
-  const snapPoints = useMemo(() => [stepSnapPoint], [stepSnapPoint]);
+  const snapPoints = useMemo(() => {
+    if (isRideConfirmed) {
+      return ['25%', '54%'];
+    }
+    return [stepSnapPoint];
+  }, [isRideConfirmed, stepSnapPoint]);
 
-  // Ensure sheet snaps cleanly to index 0 on step change
-  // useEffect(() => {
-  //   sheetRef.current?.snapToIndex(0);
-  // }, [flowStep]);
+  // Minimize sheet when ride is confirmed to expose map view for driver tracking
+  useEffect(() => {
+    if (isRideConfirmed) {
+      sheetRef.current?.snapToIndex(0);
+    }
+  }, [isRideConfirmed]);
 
   const selectGroup = (group: RideGroup) => {
     if (group === activeGroup) return;
@@ -896,8 +911,8 @@ export const SingleRideFlowSheet: React.FC<Props> = ({
       snapPoints={snapPoints}
       index={0}
       enableOverDrag={false}
-      enableHandlePanningGesture={false}
-      enableContentPanningGesture={false}
+      enableHandlePanningGesture={isRideConfirmed}
+      enableContentPanningGesture={isRideConfirmed}
       handleIndicatorStyle={styles.handleIndicator}
       backgroundStyle={styles.sheetBackground}
     >

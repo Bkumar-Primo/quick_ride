@@ -10,6 +10,7 @@ type Marker = {
   x: number;
   y: number;
   flip?: boolean;
+  rotation?: number;
 };
 
 const ICON_SIZE: Record<MapVehicleIcon, { width: number; height: number }> = {
@@ -42,7 +43,7 @@ export const mapIconForVehicle = (vehicle: Pick<VehicleOption, 'id' | 'group'>):
   }
 };
 
-export const MapVehicleMarker: React.FC<Marker> = ({ icon, x, y, flip }) => {
+export const MapVehicleMarker: React.FC<Marker> = ({ icon, x, y, flip, rotation = 0 }) => {
   const size = ICON_SIZE[icon];
   return (
     <View
@@ -62,7 +63,14 @@ export const MapVehicleMarker: React.FC<Marker> = ({ icon, x, y, flip }) => {
       <View style={styles.halo} />
       <Image
         source={images[icon]}
-        style={[styles.image, size, flip && styles.flip]}
+        style={[
+          styles.image,
+          size,
+          flip && styles.flip,
+          rotation !== 0 && {
+            transform: [{ rotate: `${rotation}deg` }, ...(flip ? [{ scaleX: -1 }] : [])],
+          },
+        ]}
         resizeMode="contain"
       />
     </View>
