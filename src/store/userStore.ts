@@ -1,4 +1,6 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { create } from 'zustand';
+import { createJSONStorage, persist } from 'zustand/middleware';
 import { MOCK_RIDE_HISTORY, MOCK_USER } from '../data';
 import type { ActiveRide, LocationPoint, UserProfile } from '../types';
 
@@ -16,48 +18,56 @@ interface UserState {
   addCompletedRide: (ride: ActiveRide) => void;
 }
 
-export const useUserStore = create<UserState>((set) => ({
-  user: MOCK_USER,
-  rideHistory: MOCK_RIDE_HISTORY,
-  selectedPaymentMethod: 'QuickRide Wallet',
+export const useUserStore = create<UserState>()(
+  persist(
+    (set) => ({
+      user: MOCK_USER,
+      rideHistory: MOCK_RIDE_HISTORY,
+      selectedPaymentMethod: 'QuickRide Wallet',
 
-  updateProfile: (updates) =>
-    set((state) => ({
-      user: { ...state.user, ...updates },
-    })),
+      updateProfile: (updates) =>
+        set((state) => ({
+          user: { ...state.user, ...updates },
+        })),
 
-  addSavedPlace: (place) =>
-    set((state) => ({
-      user: {
-        ...state.user,
-        savedPlaces: [...state.user.savedPlaces, place],
-      },
-    })),
+      addSavedPlace: (place) =>
+        set((state) => ({
+          user: {
+            ...state.user,
+            savedPlaces: [...state.user.savedPlaces, place],
+          },
+        })),
 
-  removeSavedPlace: (placeId) =>
-    set((state) => ({
-      user: {
-        ...state.user,
-        savedPlaces: state.user.savedPlaces.filter((p) => p.id !== placeId),
-      },
-    })),
+      removeSavedPlace: (placeId) =>
+        set((state) => ({
+          user: {
+            ...state.user,
+            savedPlaces: state.user.savedPlaces.filter((p) => p.id !== placeId),
+          },
+        })),
 
-  addFundsToWallet: (amount) =>
-    set((state) => ({
-      user: {
-        ...state.user,
-        walletBalance: state.user.walletBalance + amount,
-      },
-    })),
+      addFundsToWallet: (amount) =>
+        set((state) => ({
+          user: {
+            ...state.user,
+            walletBalance: state.user.walletBalance + amount,
+          },
+        })),
 
-  setPaymentMethod: (method) => set({ selectedPaymentMethod: method }),
+      setPaymentMethod: (method) => set({ selectedPaymentMethod: method }),
 
-  addCompletedRide: (ride) =>
-    set((state) => ({
-      rideHistory: [ride, ...state.rideHistory],
-      user: {
-        ...state.user,
-        totalRides: state.user.totalRides + 1,
-      },
-    })),
-}));
+      addCompletedRide: (ride) =>
+        set((state) => ({
+          rideHistory: [ride, ...state.rideHistory],
+          user: {
+            ...state.user,
+            totalRides: state.user.totalRides + 1,
+          },
+        })),
+    }),
+    {
+      name: 'quickride-user-storage',
+      storage: createJSONStorage(() => AsyncStorage),
+    },
+  ),
+);

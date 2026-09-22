@@ -170,6 +170,40 @@ export const ProfileScreen: React.FC<any> = ({ navigation }) => {
           </TouchableOpacity>
         </View>
 
+        {/* Legal & Policies */}
+        <Text style={styles.menuSectionTitle}>Legal & Information</Text>
+        <View style={styles.menuBox}>
+          <TouchableOpacity
+            style={styles.menuRow}
+            activeOpacity={0.7}
+            onPress={() => navigation.navigate('TermsOfService')}
+          >
+            <View style={styles.menuLeft}>
+              <View style={[styles.menuIconBg, { backgroundColor: '#F1F5F9' }]}>
+                <Ionicons name="document-text-outline" size={18} color="#475569" />
+              </View>
+              <Text style={styles.menuLabel}>Terms of Service</Text>
+            </View>
+            <Ionicons name="chevron-forward" size={18} color={Colors.gray400} />
+          </TouchableOpacity>
+
+          <View style={styles.rowDivider} />
+
+          <TouchableOpacity
+            style={styles.menuRow}
+            activeOpacity={0.7}
+            onPress={() => navigation.navigate('PrivacyPolicy')}
+          >
+            <View style={styles.menuLeft}>
+              <View style={[styles.menuIconBg, { backgroundColor: '#F1F5F9' }]}>
+                <Ionicons name="lock-closed-outline" size={18} color="#475569" />
+              </View>
+              <Text style={styles.menuLabel}>Privacy Policy</Text>
+            </View>
+            <Ionicons name="chevron-forward" size={18} color={Colors.gray400} />
+          </TouchableOpacity>
+        </View>
+
         {/* Client Demo Controls */}
         <Text style={styles.menuSectionTitle}>Demo Presentation Controls</Text>
         <View style={styles.menuBox}>

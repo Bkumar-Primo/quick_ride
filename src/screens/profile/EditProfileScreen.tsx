@@ -2,7 +2,16 @@ import { Ionicons } from '@expo/vector-icons';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type React from 'react';
 import { useState } from 'react';
-import { SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import {
+  Platform,
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+import { KeyboardAvoidingView } from 'react-native-keyboard-controller';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAppDialog } from '../../components/common/AppDialog';
 import { Avatar } from '../../components/common/Avatar';
@@ -41,7 +50,10 @@ export const EditProfileScreen: React.FC<Props> = ({ navigation }) => {
   };
 
   return (
-    <View style={styles.container}>
+    <KeyboardAvoidingView
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      style={styles.container}
+    >
       {/* Top Header with Notch Protection */}
       <View style={[styles.header, { paddingTop: insets.top + 6 }]}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
@@ -99,7 +111,7 @@ export const EditProfileScreen: React.FC<Props> = ({ navigation }) => {
           style={styles.saveBtn}
         />
       </ScrollView>
-    </View>
+    </KeyboardAvoidingView>
   );
 };
 

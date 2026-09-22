@@ -4,12 +4,15 @@ import { useEffect, useRef } from 'react';
 import { Animated, Image, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { AuthStackParamList } from '../../navigation/types';
+import { useAuthStore } from '../../store/authStore';
 
-type Props = NativeStackScreenProps<AuthStackParamList, 'Splash'>;
+type Props = Partial<NativeStackScreenProps<AuthStackParamList, 'Splash'>> & {
+  onFinish?: () => void;
+};
 
 const splashMasterBg = require('../../assets/images/splash_master_bg.png');
 
-export const SplashScreen: React.FC<Props> = ({ navigation }) => {
+export const SplashScreen: React.FC<Props> = ({ navigation, onFinish }) => {
   const insets = useSafeAreaInsets();
   const progressAnim = useRef(new Animated.Value(0)).current;
   const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -22,15 +25,27 @@ export const SplashScreen: React.FC<Props> = ({ navigation }) => {
       useNativeDriver: true,
     }).start();
 
-    // Progress bar animation to next screen
     Animated.timing(progressAnim, {
       toValue: 1,
       duration: 2200,
       useNativeDriver: false,
     }).start(() => {
-      navigation.replace('Onboarding');
+      if (onFinish) {
+        onFinish();
+        return;
+      }
+      const { isAuthenticated, hasGrantedLocation, hasCompletedOnboarding } =
+        useAuthStore.getState();
+      if (isAuthenticated && hasGrantedLocation) {
+        return;
+      }
+      if (hasCompletedOnboarding) {
+        navigation?.replace('Login');
+      } else {
+        navigation?.replace('Onboarding');
+      }
     });
-  }, [navigation, progressAnim, fadeAnim]);
+  }, [navigation, onFinish, progressAnim, fadeAnim]);
 
   const barWidth = progressAnim.interpolate({
     inputRange: [0, 1],

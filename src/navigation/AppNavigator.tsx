@@ -1,6 +1,8 @@
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import type React from 'react';
+import { useState } from 'react';
+import { SplashScreen } from '../screens/auth/SplashScreen';
 import { ActiveRideScreen } from '../screens/home/ActiveRideScreen';
 import { BookingConfirmScreen } from '../screens/home/BookingConfirmScreen';
 import { DriverAssignedScreen } from '../screens/home/DriverAssignedScreen';
@@ -12,6 +14,8 @@ import { RideCompletedScreen } from '../screens/home/RideCompletedScreen';
 import { RoutePreviewScreen } from '../screens/home/RoutePreviewScreen';
 import { SearchingDriverScreen } from '../screens/home/SearchingDriverScreen';
 import { VehicleSelectScreen } from '../screens/home/VehicleSelectScreen';
+import { PrivacyPolicyScreen } from '../screens/legal/PrivacyPolicyScreen';
+import { TermsOfServiceScreen } from '../screens/legal/TermsOfServiceScreen';
 import { EditProfileScreen } from '../screens/profile/EditProfileScreen';
 import { WalletScreen } from '../screens/wallet/WalletScreen';
 import { useAuthStore } from '../store/authStore';
@@ -22,10 +26,15 @@ import type { RootStackParamList } from './types';
 const RootStack = createNativeStackNavigator<RootStackParamList>();
 
 export const AppNavigator: React.FC = () => {
+  const [splashFinished, setSplashFinished] = useState(false);
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const hasGrantedLocation = useAuthStore((state) => state.hasGrantedLocation);
 
   const showMainApp = isAuthenticated && hasGrantedLocation;
+
+  if (!splashFinished) {
+    return <SplashScreen onFinish={() => setSplashFinished(true)} />;
+  }
 
   return (
     <NavigationContainer>
@@ -40,39 +49,11 @@ export const AppNavigator: React.FC = () => {
         ) : (
           <>
             <RootStack.Screen name="MainTabs" component={MainTabNavigator} />
-            <RootStack.Screen
-              name="LocationSearch"
-              component={LocationSearchScreen}
-              options={{ animation: 'fade_from_bottom' }}
-            />
-            <RootStack.Screen name="PickupConfirm" component={PickupConfirmScreen} />
-            <RootStack.Screen name="RoutePreview" component={RoutePreviewScreen} />
-            <RootStack.Screen name="VehicleSelect" component={VehicleSelectScreen} />
-            <RootStack.Screen name="BookingConfirm" component={BookingConfirmScreen} />
-            <RootStack.Screen
-              name="SearchingDriver"
-              component={SearchingDriverScreen}
-              options={{ gestureEnabled: false }}
-            />
-            <RootStack.Screen
-              name="DriverAssigned"
-              component={DriverAssignedScreen}
-              options={{ gestureEnabled: false }}
-            />
-            <RootStack.Screen name="DriverCall" component={DriverCallScreen} />
             <RootStack.Screen name="DriverChat" component={DriverChatScreen} />
-            <RootStack.Screen
-              name="ActiveRide"
-              component={ActiveRideScreen}
-              options={{ gestureEnabled: false }}
-            />
-            <RootStack.Screen
-              name="RideCompleted"
-              component={RideCompletedScreen}
-              options={{ gestureEnabled: false }}
-            />
             <RootStack.Screen name="EditProfile" component={EditProfileScreen} />
             <RootStack.Screen name="Wallet" component={WalletScreen} />
+            <RootStack.Screen name="TermsOfService" component={TermsOfServiceScreen} />
+            <RootStack.Screen name="PrivacyPolicy" component={PrivacyPolicyScreen} />
           </>
         )}
       </RootStack.Navigator>

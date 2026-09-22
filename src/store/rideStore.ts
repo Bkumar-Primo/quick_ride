@@ -13,8 +13,22 @@ const DRIVER_ARRIVAL_DELAY_MS = 4500;
 const TRIP_START_DELAY_MS = 4500;
 const RIDE_END_DELAY_MS = 10000;
 
+export type FlowStep =
+  | 'IDLE'
+  | 'LOCATION_SEARCH'
+  | 'PICKUP_CONFIRM'
+  | 'ROUTE_PREVIEW'
+  | 'BOOKING_CONFIRM'
+  | 'SEARCHING_DRIVER'
+  | 'DRIVER_ASSIGNED'
+  | 'DRIVER_ARRIVING'
+  | 'DRIVER_ARRIVED'
+  | 'RIDE_IN_PROGRESS'
+  | 'RIDE_COMPLETED';
+
 interface RideState {
   currentStatus: RideStatus;
+  flowStep: FlowStep;
   pickup: LocationPoint;
   destination: LocationPoint | null;
   selectedVehicle: VehicleOption;
@@ -22,6 +36,7 @@ interface RideState {
   activeRide: ActiveRide | null;
   searchCountdown: number;
 
+  setFlowStep: (step: FlowStep) => void;
   setPickup: (loc: LocationPoint) => void;
   setDestination: (loc: LocationPoint | null) => void;
   setSelectedVehicle: (vehicle: VehicleOption) => void;
@@ -38,12 +53,15 @@ interface RideState {
 
 export const useRideStore = create<RideState>((set, get) => ({
   currentStatus: 'IDLE',
+  flowStep: 'IDLE',
   pickup: CURRENT_LOCATION,
   destination: POPULAR_DESTINATIONS[0],
   selectedVehicle: MOCK_VEHICLES[0],
   appliedPromo: MOCK_OFFERS[0], // QUICK50
   activeRide: null,
   searchCountdown: 3,
+
+  setFlowStep: (step) => set({ flowStep: step }),
 
   setPickup: (loc) => set({ pickup: loc }),
 
@@ -86,6 +104,7 @@ export const useRideStore = create<RideState>((set, get) => ({
 
     set({
       currentStatus: 'SEARCHING_DRIVER',
+      flowStep: 'SEARCHING_DRIVER',
       activeRide: newRide,
       searchCountdown: 3,
     });
@@ -96,6 +115,7 @@ export const useRideStore = create<RideState>((set, get) => ({
       if (current === 'SEARCHING_DRIVER') {
         set({
           currentStatus: 'DRIVER_ASSIGNED',
+          flowStep: 'DRIVER_ASSIGNED',
           activeRide: {
             ...newRide,
             status: 'DRIVER_ASSIGNED',
@@ -122,6 +142,7 @@ export const useRideStore = create<RideState>((set, get) => ({
     if (!active) return;
     set({
       currentStatus: 'DRIVER_ARRIVING',
+      flowStep: 'DRIVER_ARRIVING',
       activeRide: {
         ...active,
         status: 'DRIVER_ARRIVING',
@@ -134,6 +155,7 @@ export const useRideStore = create<RideState>((set, get) => ({
     if (!active) return;
     set({
       currentStatus: 'DRIVER_ARRIVED',
+      flowStep: 'DRIVER_ARRIVED',
       activeRide: {
         ...active,
         status: 'DRIVER_ARRIVED',
@@ -146,6 +168,7 @@ export const useRideStore = create<RideState>((set, get) => ({
     if (!active) return;
     set({
       currentStatus: 'RIDE_IN_PROGRESS',
+      flowStep: 'RIDE_IN_PROGRESS',
       activeRide: {
         ...active,
         status: 'RIDE_IN_PROGRESS',
@@ -177,6 +200,7 @@ export const useRideStore = create<RideState>((set, get) => ({
 
     set({
       currentStatus: 'RIDE_COMPLETED',
+      flowStep: 'RIDE_COMPLETED',
       activeRide: completedRide,
     });
   },
@@ -191,6 +215,7 @@ export const useRideStore = create<RideState>((set, get) => ({
     }
     set({
       currentStatus: 'IDLE',
+      flowStep: 'IDLE',
       activeRide: null,
     });
   },
@@ -198,6 +223,7 @@ export const useRideStore = create<RideState>((set, get) => ({
   resetRide: () => {
     set({
       currentStatus: 'IDLE',
+      flowStep: 'IDLE',
       activeRide: null,
     });
   },

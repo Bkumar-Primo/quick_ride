@@ -2,16 +2,8 @@ import { Ionicons } from '@expo/vector-icons';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type React from 'react';
 import { useState } from 'react';
-import {
-  Image,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-} from 'react-native';
+import { Image, Platform, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { KeyboardAvoidingView, KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Button } from '../../components/common/Button';
 import { Colors } from '../../constants/colors';
@@ -66,8 +58,9 @@ export const ProfileSetupScreen: React.FC<Props> = ({ navigation }) => {
 
   return (
     <KeyboardAvoidingView
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       style={styles.container}
+      automaticOffset
     >
       <View style={[styles.topBar, { paddingTop: insets.top + 8 }]}>
         {/* <TouchableOpacity
@@ -83,10 +76,11 @@ export const ProfileSetupScreen: React.FC<Props> = ({ navigation }) => {
         <View style={styles.topBarSpacer} />
       </View>
 
-      <ScrollView
+      <KeyboardAwareScrollView
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
         bounces={false}
+        bottomOffset={50}
         contentContainerStyle={[
           styles.scrollContent,
           { paddingBottom: Math.max(insets.bottom, 20) },
@@ -151,7 +145,7 @@ export const ProfileSetupScreen: React.FC<Props> = ({ navigation }) => {
           disabled={!name.trim() || !email.trim()}
           style={styles.continueBtn}
         />
-      </ScrollView>
+      </KeyboardAwareScrollView>
     </KeyboardAvoidingView>
   );
 };

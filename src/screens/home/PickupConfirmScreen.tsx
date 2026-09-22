@@ -38,7 +38,11 @@ export const PickupConfirmScreen: React.FC<Props> = ({ navigation }) => {
       <MapControlsColumn top={insets.top + 86} />
 
       <RideSheet>
-        <View style={styles.pickupRow}>
+        <TouchableOpacity
+          style={styles.pickupRow}
+          activeOpacity={0.8}
+          onPress={() => navigation.navigate('LocationSearch', { mode: 'pickup' })}
+        >
           <Ionicons name="location" size={20} color={Colors.primary} />
           <View style={styles.pickupCopy}>
             <Text style={styles.pickupLabel}>Pickup location</Text>
@@ -46,7 +50,7 @@ export const PickupConfirmScreen: React.FC<Props> = ({ navigation }) => {
             <Text style={styles.pickupSub}>{pickup.subtitle}</Text>
           </View>
           <Text style={styles.change}>Change</Text>
-        </View>
+        </TouchableOpacity>
 
         <View style={styles.shortcutRow}>
           <TouchableOpacity

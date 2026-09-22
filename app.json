@@ -13,7 +13,8 @@
           "locationWhenInUsePermission": "QuickRide needs your location to find nearby drivers, show accurate pickup points, and give you a smooth ride.",
           "locationAlwaysAndWhenInUsePermission": "QuickRide needs your location to find nearby drivers, show accurate pickup points, and give you a smooth ride."
         }
-      ]
+      ],
+      "expo-font"
     ],
     "ios": {
       "supportsTablet": true,

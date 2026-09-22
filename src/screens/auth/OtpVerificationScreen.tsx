@@ -5,7 +5,6 @@ import type React from 'react';
 import { useEffect, useRef, useState } from 'react';
 import {
   Image,
-  KeyboardAvoidingView,
   Platform,
   ScrollView,
   StyleSheet,
@@ -14,6 +13,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import { KeyboardAvoidingView } from 'react-native-keyboard-controller';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAppDialog } from '../../components/common/AppDialog';
 import { Button } from '../../components/common/Button';
@@ -94,8 +94,9 @@ export const OtpVerificationScreen: React.FC<Props> = ({ route, navigation }) =>
 
   return (
     <KeyboardAvoidingView
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       style={styles.container}
+      keyboardVerticalOffset={-100}
     >
       <View style={[styles.heroContent, { paddingTop: insets.top + 8 }]}>
         <Image source={loginHero} style={styles.backdropImage} resizeMode="cover" />
@@ -323,6 +324,9 @@ const styles = StyleSheet.create({
     left: 0,
     color: 'transparent',
     backgroundColor: 'transparent',
+    // width: 1,
+    // height: 1,
+    opacity: 0,
   },
   errorText: {
     color: Colors.danger,

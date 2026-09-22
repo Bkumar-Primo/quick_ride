@@ -7,14 +7,19 @@ import { OnboardingScreen } from '../screens/auth/OnboardingScreen';
 import { OtpVerificationScreen } from '../screens/auth/OtpVerificationScreen';
 import { ProfileSetupScreen } from '../screens/auth/ProfileSetupScreen';
 import { SplashScreen } from '../screens/auth/SplashScreen';
+import { PrivacyPolicyScreen } from '../screens/legal/PrivacyPolicyScreen';
+import { TermsOfServiceScreen } from '../screens/legal/TermsOfServiceScreen';
+import { useAuthStore } from '../store/authStore';
 import type { AuthStackParamList } from './types';
 
 const Stack = createNativeStackNavigator<AuthStackParamList>();
 
 export const AuthNavigator: React.FC = () => {
+  const hasCompletedOnboarding = useAuthStore((state) => state.hasCompletedOnboarding);
+
   return (
     <Stack.Navigator
-      initialRouteName="Splash"
+      initialRouteName={hasCompletedOnboarding ? 'Login' : 'Splash'}
       screenOptions={{
         headerShown: false,
         animation: 'fade',
@@ -27,6 +32,8 @@ export const AuthNavigator: React.FC = () => {
       <Stack.Screen name="ProfileSetup" component={ProfileSetupScreen} />
       <Stack.Screen name="LocationPermission" component={LocationPermissionScreen} />
       <Stack.Screen name="AllSet" component={AllSetScreen} />
+      <Stack.Screen name="TermsOfService" component={TermsOfServiceScreen} />
+      <Stack.Screen name="PrivacyPolicy" component={PrivacyPolicyScreen} />
     </Stack.Navigator>
   );
 };

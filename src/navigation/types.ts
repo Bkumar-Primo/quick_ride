@@ -9,6 +9,8 @@ export type AuthStackParamList = {
   ProfileSetup: undefined;
   AllSet: undefined;
   LocationPermission: undefined;
+  TermsOfService: undefined;
+  PrivacyPolicy: undefined;
 };
 
 export type MainTabParamList = {
@@ -39,4 +41,6 @@ export type RootStackParamList = {
   EditProfile: undefined;
   Wallet: undefined;
   SavedPlaces: undefined;
+  TermsOfService: undefined;
+  PrivacyPolicy: undefined;
 };

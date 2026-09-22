@@ -5,7 +5,6 @@ import type React from 'react';
 import { useState } from 'react';
 import {
   Image,
-  KeyboardAvoidingView,
   Platform,
   ScrollView,
   StyleSheet,
@@ -13,6 +12,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import { KeyboardAvoidingView } from 'react-native-keyboard-controller';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Svg, { Path } from 'react-native-svg';
 import { CountryPickerModal } from '../../components/auth/CountryPickerModal';
@@ -100,7 +100,8 @@ export const LoginScreen: React.FC<Props> = ({ navigation }) => {
 
   return (
     <KeyboardAvoidingView
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      keyboardVerticalOffset={-100}
       style={styles.container}
     >
       <View style={[styles.heroContent, { paddingTop: insets.top + 8 }]}>
@@ -160,8 +161,15 @@ export const LoginScreen: React.FC<Props> = ({ navigation }) => {
           />
 
           <Text style={styles.termsText}>
-            By continuing, you agree to our <Text style={styles.linkText}>Terms of Service</Text>{' '}
-            and <Text style={styles.linkText}>Privacy Policy</Text>.
+            By continuing, you agree to our{' '}
+            <Text style={styles.linkText} onPress={() => navigation.navigate('TermsOfService')}>
+              Terms of Service
+            </Text>{' '}
+            and{' '}
+            <Text style={styles.linkText} onPress={() => navigation.navigate('PrivacyPolicy')}>
+              Privacy Policy
+            </Text>
+            .
           </Text>
 
           <View style={styles.orRow}>

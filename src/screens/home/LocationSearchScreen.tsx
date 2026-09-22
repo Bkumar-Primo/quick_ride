@@ -57,6 +57,7 @@ const SEARCHABLE = [GURUGRAM_HOME, ...POPULAR_DESTINATIONS];
 export const LocationSearchScreen: React.FC<Props> = ({ navigation, route }) => {
   const insets = useSafeAreaInsets();
   const pickup = useRideStore((state) => state.pickup);
+  const destination = useRideStore((state) => state.destination);
   const setPickup = useRideStore((state) => state.setPickup);
   const setDestination = useRideStore((state) => state.setDestination);
   const [query, setQuery] = useState('');
@@ -107,14 +108,17 @@ export const LocationSearchScreen: React.FC<Props> = ({ navigation, route }) => 
               onPress={() =>
                 navigation.navigate({
                   name: 'LocationSearch',
-                  params: { mode: 'pickup', returnTo: 'destination' },
+                  params: {
+                    mode: isPickupSelection ? 'destination' : 'pickup',
+                    returnTo: isPickupSelection ? undefined : 'destination',
+                  },
                   merge: true,
                 })
               }
             >
-              <Text style={styles.pickupLabel}>Pickup</Text>
+              <Text style={styles.pickupLabel}>{isPickupSelection ? 'Destination' : 'Pickup'}</Text>
               <Text style={styles.pickupValue} numberOfLines={1}>
-                {pickup.title} ›
+                {isPickupSelection ? destination?.title || 'Where to?' : pickup.title} ›
               </Text>
             </TouchableOpacity>
           </View>
