@@ -164,11 +164,11 @@ export const SingleRideFlowSheet: React.FC<Props> = ({
   const needle = searchQuery.trim().toLowerCase();
   const filteredSearch = needle
     ? SEARCHABLE.filter(
-        (item) =>
-          item.title.toLowerCase().includes(needle) ||
-          item.subtitle.toLowerCase().includes(needle) ||
-          item.address.toLowerCase().includes(needle),
-      )
+      (item) =>
+        item.title.toLowerCase().includes(needle) ||
+        item.subtitle.toLowerCase().includes(needle) ||
+        item.address.toLowerCase().includes(needle),
+    )
     : SEARCHABLE;
 
   const vehicleIconName: keyof typeof Ionicons.glyphMap =
@@ -755,8 +755,9 @@ export const SingleRideFlowSheet: React.FC<Props> = ({
 
     const isArrived = currentStatus === 'DRIVER_ARRIVED';
     const isInProgress = currentStatus === 'RIDE_IN_PROGRESS';
+    const isAssigned = currentStatus === 'DRIVER_ASSIGNED';
 
-    let titleText = 'Driver is on the way';
+    let titleText = 'Driver assigned • On the way';
     let subText = 'Your driver is heading to the pickup point.';
 
     if (isInProgress) {
@@ -764,7 +765,10 @@ export const SingleRideFlowSheet: React.FC<Props> = ({
       subText = 'Heading safely to your destination.';
     } else if (isArrived) {
       titleText = 'Your driver has arrived!';
-      subText = 'Your driver has reached the pickup point.';
+      subText = 'Please share your OTP with the driver.';
+    } else {
+      titleText = 'Driver assigned • On the way';
+      subText = 'Your driver is heading to the pickup point.';
     }
 
     return (
@@ -801,6 +805,18 @@ export const SingleRideFlowSheet: React.FC<Props> = ({
           onDirections={onOpenSafety}
         />
 
+        {isArrived && (
+          <View style={styles.otpCard}>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.otpCardTitle}>SHARE OTP WITH DRIVER</Text>
+              <Text style={styles.otpCardSub}>Give this code to start your ride</Text>
+            </View>
+            <View style={styles.otpBadge}>
+              <Text style={styles.otpBadgeText}>{activeRide.otpPin || '4821'}</Text>
+            </View>
+          </View>
+        )}
+
         <View style={styles.routeCard}>
           <View style={styles.routeCol}>
             <Text style={styles.pinLabel}>
@@ -820,15 +836,10 @@ export const SingleRideFlowSheet: React.FC<Props> = ({
           ) : null}
         </View>
 
-        {isInProgress ? // <SoftPillButton
-        //   title="Safety & Emergency Support"
-        //   onPress={onOpenSafety}
-        //   style={{ marginTop: 10 }}
-        // />
-        null : !isArrived ? (
+        {isInProgress ? null : !isArrived ? (
           <SoftPillButton title="Cancel Ride" onPress={cancelRide} style={{ marginTop: 10 }} />
         ) : (
-          <Text style={styles.hint}>Your ride will begin automatically in a few seconds.</Text>
+          <Text style={styles.hint}>Sharing OTP... Ride will start automatically in 3 seconds.</Text>
         )}
       </BottomSheetView>
     );
@@ -1206,6 +1217,40 @@ const styles = StyleSheet.create({
     gap: 2,
   },
   arrivedText: { color: Colors.primary, fontWeight: '700', fontSize: 12 },
+  otpCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFF1E6',
+    borderRadius: 16,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    marginTop: 10,
+    borderWidth: 1.5,
+    borderColor: '#FF5500',
+  },
+  otpCardTitle: {
+    fontSize: 11,
+    fontWeight: '800',
+    color: Colors.primary,
+    letterSpacing: 0.5,
+  },
+  otpCardSub: {
+    fontSize: 12,
+    color: Colors.gray600,
+    marginTop: 2,
+  },
+  otpBadge: {
+    backgroundColor: Colors.primary,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 10,
+  },
+  otpBadgeText: {
+    color: Colors.white,
+    fontSize: 18,
+    fontWeight: '800',
+    letterSpacing: 2,
+  },
   etaBox: { alignItems: 'flex-end' },
   etaVal: { fontSize: 22, fontWeight: '800', color: Colors.primary },
   etaSub: { fontSize: 11, color: Colors.gray500 },

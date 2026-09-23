@@ -111,10 +111,11 @@ export const useRideStore = create<RideState>((set, get) => ({
       searchCountdown: 3,
     });
 
-    // Progress the driver lifecycle automatically; riders should never operate driver controls.
+    // Progress the driver lifecycle automatically
     setTimeout(() => {
       const current = get().currentStatus;
       if (current === 'SEARCHING_DRIVER') {
+        // Step 1: Finding driver succeeded -> DRIVER_ASSIGNED
         set({
           currentStatus: 'DRIVER_ASSIGNED',
           flowStep: 'DRIVER_ASSIGNED',
@@ -125,16 +126,24 @@ export const useRideStore = create<RideState>((set, get) => ({
           },
         });
 
+        // Step 2: Driver starts moving en route -> DRIVER_ARRIVING after 2s
         setTimeout(() => {
           if (get().currentStatus !== 'DRIVER_ASSIGNED') return;
-          get().simulateDriverArrived();
+          get().simulateDriverArriving();
 
+          // Step 3: Driver completes arrival journey (13s) -> DRIVER_ARRIVED
           setTimeout(() => {
-            if (get().currentStatus === 'DRIVER_ARRIVED') {
-              get().startTrip();
-            }
-          }, TRIP_START_DELAY_MS);
-        }, DRIVER_ARRIVAL_DELAY_MS);
+            if (get().currentStatus !== 'DRIVER_ARRIVING') return;
+            get().simulateDriverArrived();
+
+            // Step 4: OTP shared with driver (3s pause) -> start trip
+            setTimeout(() => {
+              if (get().currentStatus === 'DRIVER_ARRIVED') {
+                get().startTrip();
+              }
+            }, TRIP_START_DELAY_MS);
+          }, 13000);
+        }, 2000);
       }
     }, 2800);
   },

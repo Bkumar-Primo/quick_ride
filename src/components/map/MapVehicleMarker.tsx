@@ -15,6 +15,9 @@ export type MarkerData = {
 };
 
 const ICON_SIZE: Record<MapVehicleIcon, { width: number; height: number }> = {
+  bike2D: { width: 44, height: 44 },
+  auto2D: { width: 44, height: 44 },
+  cab2D: { width: 44, height: 44 },
   bikeLite: { width: 48, height: 32 },
   bikePlus: { width: 52, height: 34 },
   auto: { width: 52, height: 40 },
@@ -26,25 +29,10 @@ const ICON_SIZE: Record<MapVehicleIcon, { width: number; height: number }> = {
 export const mapIconForVehicle = (
   vehicle?: Pick<VehicleOption, 'id' | 'group'> | null,
 ): MapVehicleIcon => {
-  if (!vehicle) return 'cabEconomy';
-  switch (vehicle.id) {
-    case 'veh-bike':
-      return 'bikeLite';
-    case 'veh-bike-plus':
-      return 'bikePlus';
-    case 'veh-auto':
-      return 'auto';
-    case 'veh-comfort':
-      return 'cabPremium';
-    case 'veh-xl':
-      return 'cabSuv';
-    default:
-      return vehicle.group === 'bike'
-        ? 'bikeLite'
-        : vehicle.group === 'auto'
-          ? 'auto'
-          : 'cabEconomy';
-  }
+  if (!vehicle) return 'cab2D';
+  if (vehicle.group === 'bike') return 'bike2D';
+  if (vehicle.group === 'auto') return 'auto2D';
+  return 'cab2D';
 };
 
 export const MapVehicleMarker: React.FC<MarkerData> = ({
@@ -55,13 +43,13 @@ export const MapVehicleMarker: React.FC<MarkerData> = ({
   bearing = 0,
   scale = 1,
 }) => {
-  const size = ICON_SIZE[icon] || ICON_SIZE.cabEconomy;
+  const size = ICON_SIZE[icon] || ICON_SIZE.cab2D;
   const width = size.width * scale;
   const height = size.height * scale;
 
-  // Vehicle PNG assets in assets/ face Right (90deg East) in raw format.
-  // Subtracting 90deg aligns the front of the vehicle with 0deg North / heading direction.
-  const adjustedBearing = (bearing - 90 + 360) % 360;
+  const is2D = icon === 'bike2D' || icon === 'auto2D' || icon === 'cab2D';
+  // 2D top-down vehicle assets point North (0deg), while 3D side PNG assets face Right (90deg).
+  const adjustedBearing = is2D ? (bearing % 360) : (bearing - 90 + 360) % 360;
 
   const transformStyle = [{ rotate: `${adjustedBearing}deg` }, flip ? { scaleX: -1 } : null].filter(
     Boolean,

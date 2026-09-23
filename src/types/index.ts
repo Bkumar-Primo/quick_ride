@@ -51,7 +51,7 @@ export interface DriverInfo {
   carColor: string;
   carNumber: string;
   carCategory?: string;
-  carImageUrl?: string;
+  carImageUrl?: any;
   coordinates: {
     latitude: number;
     longitude: number;

@@ -15,8 +15,10 @@ export const SM_HEIGHTS_PICKUP: LocationPoint = {
   title: 'SM Heights',
   subtitle: 'Industrial Area Phase 8B, Mohali',
   address: 'SM Heights, Sector 74, Sahibzada Ajit Singh Nagar, Punjab 160055',
-  latitude: 30.7060817,
-  longitude: 76.6856152,
+  // latitude: 30.7060817,
+  // longitude: 76.6856152,
+  latitude: 30.707121,
+  longitude: 76.685022,
   type: 'recent',
 };
 

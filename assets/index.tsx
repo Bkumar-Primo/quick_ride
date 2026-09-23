@@ -6,4 +6,8 @@ export const images = {
   cabPremium: require('./cab-premium.png'),
   cabSuv: require('./cab-suv.png'),
   staticMap: require('./static-map.png'),
+  bike2D: require("./bike-2D.png"),
+  auto2D: require("./auto-2D.png"),
+  cab2D: require("./cab-2D.png"),
+  driver: require("./driver.png")
 };

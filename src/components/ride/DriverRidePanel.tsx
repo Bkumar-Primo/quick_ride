@@ -5,6 +5,7 @@ import { Colors } from '../../constants/colors';
 import { Layout } from '../../constants/layout';
 import type { DriverInfo, VehicleOption } from '../../types';
 import { Avatar } from '../common/Avatar';
+import { images } from '../../../assets';
 
 export const DriverRidePanel: React.FC<{
   driver: DriverInfo;
@@ -23,12 +24,19 @@ export const DriverRidePanel: React.FC<{
         ? 'bus-outline'
         : 'car';
 
+  const carImageSource =
+    vehicle?.imageUrl ||
+    (typeof driver.carImageUrl === 'string'
+      ? { uri: driver.carImageUrl }
+      : driver.carImageUrl);
+
   return (
     <View>
       <View style={styles.topRow}>
         <View style={styles.identity}>
           <View>
-            <Avatar name={driver.name} source={driver.avatar} size={56} />
+            {/* <Avatar name={driver.name} source={driver.avatar} size={56} /> */}
+            <Image source={images.driver} style={{ height: 56, width: 56, borderRadius: 28 }} />
             <View style={styles.ratingBadge}>
               <Ionicons name="star" size={10} color="#F59E0B" />
               <Text style={styles.ratingText}>{driver.rating.toFixed(1)}</Text>
@@ -56,9 +64,9 @@ export const DriverRidePanel: React.FC<{
       </View>
 
       <View style={styles.carRow}>
-        {driver.carImageUrl ? (
+        {carImageSource ? (
           <Image
-            source={{ uri: driver.carImageUrl }}
+            source={carImageSource}
             style={styles.carImage}
             resizeMode="contain"
           />
