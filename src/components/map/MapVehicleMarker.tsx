@@ -49,7 +49,7 @@ export const MapVehicleMarker: React.FC<MarkerData> = ({
 
   const is2D = icon === 'bike2D' || icon === 'auto2D' || icon === 'cab2D';
   // 2D top-down vehicle assets point North (0deg), while 3D side PNG assets face Right (90deg).
-  const adjustedBearing = is2D ? (bearing % 360) : (bearing - 90 + 360) % 360;
+  const adjustedBearing = is2D ? bearing % 360 : (bearing - 90 + 360) % 360;
 
   const transformStyle = [{ rotate: `${adjustedBearing}deg` }, flip ? { scaleX: -1 } : null].filter(
     Boolean,

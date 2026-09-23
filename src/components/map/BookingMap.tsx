@@ -66,13 +66,9 @@ export const BookingMap: React.FC<BookingMapProps> = ({ mode }) => {
   // Driver is actively moving only when en route to pickup or en route to destination
   const isDriverMoving = isEnRouteToPickup || isInProgress;
 
-  const isRideConfirmed = [
-    'assigned',
-    'arriving',
-    'arrived',
-    'inprogress',
-    'completed',
-  ].includes(mode);
+  const isRideConfirmed = ['assigned', 'arriving', 'arrived', 'inprogress', 'completed'].includes(
+    mode,
+  );
   // Show polyline ONLY after ride confirmation (when driver is assigned)
   const showRoute = isRideConfirmed;
 
@@ -80,7 +76,14 @@ export const BookingMap: React.FC<BookingMapProps> = ({ mode }) => {
     if (isEnRouteToPickup || isSearchingDriver) return driverToPickupPath;
     if (isInProgress || isArrivedAtPickup) return pickupToDestPath;
     return pickupToDestPath; // default route preview
-  }, [isEnRouteToPickup, isSearchingDriver, isInProgress, isArrivedAtPickup, driverToPickupPath, pickupToDestPath]);
+  }, [
+    isEnRouteToPickup,
+    isSearchingDriver,
+    isInProgress,
+    isArrivedAtPickup,
+    driverToPickupPath,
+    pickupToDestPath,
+  ]);
 
   // Dynamic interval per step to ensure exact timing (15s to pickup, 30s to dest)
   const stepIntervalMs = useMemo(() => {
@@ -137,7 +140,14 @@ export const BookingMap: React.FC<BookingMapProps> = ({ mode }) => {
     }
     const idx = Math.min(driverStepIndex, fullActivePath.length - 1);
     return fullActivePath[idx];
-  }, [fullActivePath, driverStepIndex, isEnRouteToPickup, isSearchingDriver, isArrivedAtPickup, driverToPickupPath]);
+  }, [
+    fullActivePath,
+    driverStepIndex,
+    isEnRouteToPickup,
+    isSearchingDriver,
+    isArrivedAtPickup,
+    driverToPickupPath,
+  ]);
 
   const driverBearing = useMemo(() => {
     if (isArrivedAtPickup) {
@@ -145,10 +155,12 @@ export const BookingMap: React.FC<BookingMapProps> = ({ mode }) => {
       if (len > 4) {
         const from = driverToPickupPath[len - 5];
         const to = driverToPickupPath[len - 4];
-        return getRhumbLineBearing(
-          { latitude: from.latitude, longitude: from.longitude },
-          { latitude: to.latitude, longitude: to.longitude },
-        ) + 270;
+        return (
+          getRhumbLineBearing(
+            { latitude: from.latitude, longitude: from.longitude },
+            { latitude: to.latitude, longitude: to.longitude },
+          ) + 270
+        );
       }
     }
     if (!fullActivePath || fullActivePath.length < 2) return 45;
@@ -159,10 +171,12 @@ export const BookingMap: React.FC<BookingMapProps> = ({ mode }) => {
     const from = fullActivePath[prevIdx];
     const to = fullActivePath[nextIdx];
 
-    return getRhumbLineBearing(
-      { latitude: from.latitude, longitude: from.longitude },
-      { latitude: to.latitude, longitude: to.longitude },
-    ) + 270;
+    return (
+      getRhumbLineBearing(
+        { latitude: from.latitude, longitude: from.longitude },
+        { latitude: to.latitude, longitude: to.longitude },
+      ) + 270
+    );
   }, [fullActivePath, driverStepIndex, isArrivedAtPickup, driverToPickupPath]);
 
   // Rapido-style polyline trimming: remove travelled portion
@@ -176,7 +190,15 @@ export const BookingMap: React.FC<BookingMapProps> = ({ mode }) => {
       return trimPolyline(fullActivePath, driverStepIndex, driverPos);
     }
     return fullActivePath;
-  }, [showRoute, isArrivedAtPickup, mode, isDriverMoving, fullActivePath, driverStepIndex, driverPos]);
+  }, [
+    showRoute,
+    isArrivedAtPickup,
+    mode,
+    isDriverMoving,
+    fullActivePath,
+    driverStepIndex,
+    driverPos,
+  ]);
 
   // Adjust mapRegion dynamically as driver location changes with calculated deltas
   useEffect(() => {
@@ -337,15 +359,15 @@ export const BookingMap: React.FC<BookingMapProps> = ({ mode }) => {
           mode === 'arriving' ||
           mode === 'arrived' ||
           mode === 'inprogress') && (
-            <Marker
-              coordinate={driverPos}
-              anchor={{ x: 0.5, y: 0.5 }}
-              flat={true}
-              rotation={(driverBearing)}
-            >
-              <MapVehicleMarker icon={selectedIcon} bearing={driverBearing} scale={1.5} />
-            </Marker>
-          )}
+          <Marker
+            coordinate={driverPos}
+            anchor={{ x: 0.5, y: 0.5 }}
+            flat={true}
+            rotation={driverBearing}
+          >
+            <MapVehicleMarker icon={selectedIcon} bearing={driverBearing} scale={1.5} />
+          </Marker>
+        )}
       </MapView>
       <View style={styles.controlsOverlay} pointerEvents="box-none">
         <TouchableOpacity

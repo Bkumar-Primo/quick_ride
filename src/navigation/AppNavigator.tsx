@@ -44,7 +44,7 @@ export const AppNavigator: React.FC = () => {
           animation: 'slide_from_right',
         }}
       >
-        {showMainApp ? (
+        {!showMainApp ? (
           <RootStack.Screen name="Auth" component={AuthNavigator} />
         ) : (
           <>

@@ -1,20 +1,16 @@
 import { images } from '../../assets';
 import type { DriverInfo, VehicleOption } from '../types';
 
-const CAR_IMAGE =
-  images.cabPremium;
-const BIKE_IMAGE =
-  images.bikeLite;
-const AUTO_IMAGE =
-  images.auto;
+const CAR_IMAGE = images.cabPremium;
+const BIKE_IMAGE = images.bikeLite;
+const AUTO_IMAGE = images.auto;
 
 export const MOCK_DRIVERS: DriverInfo[] = [
   {
     id: 'drv-bike',
     name: 'Suresh Yadav',
     phone: '+91 98110 33445',
-    avatar:
-      images.bikeLite,
+    avatar: images.bikeLite,
     rating: 4.9,
     totalTrips: 3480,
     carModel: 'Hero Splender',

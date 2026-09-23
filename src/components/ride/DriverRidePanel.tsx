@@ -1,11 +1,11 @@
 import { Ionicons } from '@expo/vector-icons';
 import type React from 'react';
 import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { images } from '../../../assets';
 import { Colors } from '../../constants/colors';
 import { Layout } from '../../constants/layout';
 import type { DriverInfo, VehicleOption } from '../../types';
 import { Avatar } from '../common/Avatar';
-import { images } from '../../../assets';
 
 export const DriverRidePanel: React.FC<{
   driver: DriverInfo;
@@ -26,9 +26,7 @@ export const DriverRidePanel: React.FC<{
 
   const carImageSource =
     vehicle?.imageUrl ||
-    (typeof driver.carImageUrl === 'string'
-      ? { uri: driver.carImageUrl }
-      : driver.carImageUrl);
+    (typeof driver.carImageUrl === 'string' ? { uri: driver.carImageUrl } : driver.carImageUrl);
 
   return (
     <View>
@@ -65,11 +63,7 @@ export const DriverRidePanel: React.FC<{
 
       <View style={styles.carRow}>
         {carImageSource ? (
-          <Image
-            source={carImageSource}
-            style={styles.carImage}
-            resizeMode="contain"
-          />
+          <Image source={carImageSource} style={styles.carImage} resizeMode="contain" />
         ) : (
           <View style={styles.carFallback}>
             <Ionicons name={fallbackIcon} size={28} color={Colors.gray400} />

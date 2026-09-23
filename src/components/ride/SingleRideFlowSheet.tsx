@@ -164,11 +164,11 @@ export const SingleRideFlowSheet: React.FC<Props> = ({
   const needle = searchQuery.trim().toLowerCase();
   const filteredSearch = needle
     ? SEARCHABLE.filter(
-      (item) =>
-        item.title.toLowerCase().includes(needle) ||
-        item.subtitle.toLowerCase().includes(needle) ||
-        item.address.toLowerCase().includes(needle),
-    )
+        (item) =>
+          item.title.toLowerCase().includes(needle) ||
+          item.subtitle.toLowerCase().includes(needle) ||
+          item.address.toLowerCase().includes(needle),
+      )
     : SEARCHABLE;
 
   const vehicleIconName: keyof typeof Ionicons.glyphMap =
@@ -839,7 +839,9 @@ export const SingleRideFlowSheet: React.FC<Props> = ({
         {isInProgress ? null : !isArrived ? (
           <SoftPillButton title="Cancel Ride" onPress={cancelRide} style={{ marginTop: 10 }} />
         ) : (
-          <Text style={styles.hint}>Sharing OTP... Ride will start automatically in 3 seconds.</Text>
+          <Text style={styles.hint}>
+            Sharing OTP... Ride will start automatically in 3 seconds.
+          </Text>
         )}
       </BottomSheetView>
     );
