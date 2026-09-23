@@ -1,12 +1,19 @@
+import { Ionicons } from '@expo/vector-icons';
+import { getRhumbLineBearing } from 'geolib';
 import type React from 'react';
-import { useEffect, useRef } from 'react';
-import { Animated, StyleSheet, Text, View } from 'react-native';
-import Svg, { Circle, Defs, LinearGradient, Path, Stop } from 'react-native-svg';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import MapView, { Marker, Polyline, type Region } from 'react-native-maps';
 import { Colors } from '../../constants/colors';
+import {
+  CP67_MALL_DESTINATION,
+  DEMO_DRIVER_ROUTE,
+  FINVASIA_DRIVER_START,
+  SM_HEIGHTS_PICKUP,
+} from '../../data/mockLocations';
 import { useRideStore } from '../../store/rideStore';
-import type { RideGroup } from '../../types';
-import { type MapVehicleIcon, MapVehicleLayer, mapIconForVehicle } from './MapVehicleMarker';
-import { StaticMapBackground } from './StaticMapBackground';
+import { interpolatePath, trimPolyline } from '../../utils/mapUtils';
+import { MapVehicleMarker, mapIconForVehicle } from './MapVehicleMarker';
 
 export type BookingMapMode =
   | 'pickup'
@@ -21,437 +28,456 @@ export type BookingMapMode =
   | 'inprogress'
   | 'completed';
 
-const MIXED_NEARBY: { icon: MapVehicleIcon; x: number; y: number; flip?: boolean }[] = [
-  { icon: 'bikeLite', x: 30, y: 29 },
-  { icon: 'cabEconomy', x: 70, y: 24, flip: true },
-  { icon: 'auto', x: 75, y: 46 },
-  { icon: 'bikePlus', x: 37, y: 58, flip: true },
-  { icon: 'cabSuv', x: 20, y: 44 },
-  { icon: 'cabPremium', x: 52, y: 18 },
-];
+interface BookingMapProps {
+  mode: BookingMapMode;
+}
 
-const GROUP_NEARBY: Record<
-  RideGroup,
-  { icon: MapVehicleIcon; x: number; y: number; flip?: boolean }[]
-> = {
-  bike: [
-    { icon: 'bikeLite', x: 30, y: 29 },
-    { icon: 'bikePlus', x: 70, y: 24, flip: true },
-    { icon: 'bikeLite', x: 75, y: 46, flip: true },
-    { icon: 'bikePlus', x: 37, y: 58 },
-    { icon: 'bikeLite', x: 20, y: 44, flip: true },
-  ],
-  auto: [
-    { icon: 'auto', x: 30, y: 29 },
-    { icon: 'auto', x: 70, y: 24, flip: true },
-    { icon: 'auto', x: 75, y: 46 },
-    { icon: 'auto', x: 37, y: 58, flip: true },
-  ],
-  cab: [
-    { icon: 'cabEconomy', x: 30, y: 29 },
-    { icon: 'cabPremium', x: 70, y: 24, flip: true },
-    { icon: 'cabSuv', x: 75, y: 46 },
-    { icon: 'cabEconomy', x: 37, y: 58, flip: true },
-    { icon: 'cabPremium', x: 20, y: 44 },
-  ],
-};
-
-const toPercent = (x: number, y: number) => ({
-  x: (x / 400) * 100,
-  y: (y / 520) * 100,
-});
-
-export const BookingMap: React.FC<{ mode: BookingMapMode }> = ({ mode }) => {
-  const pulseAnim = useRef(new Animated.Value(1)).current;
+export const BookingMap: React.FC<BookingMapProps> = ({ mode }) => {
+  const mapRef = useRef<MapView | null>(null);
   const selectedVehicle = useRideStore((state) => state.selectedVehicle);
   const selectedIcon = mapIconForVehicle(selectedVehicle);
 
+  // Pre-interpolated turn-by-turn road paths for simulation
+  const driverToPickupPath = useMemo(
+    () => interpolatePath(DEMO_DRIVER_ROUTE.driverToPickupWaypoints, 5),
+    [],
+  );
+  const pickupToDestPath = useMemo(
+    () => interpolatePath(DEMO_DRIVER_ROUTE.pickupToDestWaypoints, 3),
+    [],
+  );
+
+  // State for driver position, bearing, step index, and map region
+  const [driverStepIndex, setDriverStepIndex] = useState<number>(0);
+  const [isFollowingDriver, setIsFollowingDriver] = useState<boolean>(true);
+  const [mapRegion, setMapRegion] = useState<Region>({
+    latitude: SM_HEIGHTS_PICKUP.latitude,
+    longitude: SM_HEIGHTS_PICKUP.longitude,
+    latitudeDelta: 0.012,
+    longitudeDelta: 0.012,
+  });
+
+  // Stage definitions
+  const isSearchingDriver = mode === 'searching';
+  const isEnRouteToPickup = ['assigned', 'arriving'].includes(mode);
+  const isArrivedAtPickup = mode === 'arrived';
+  const isInProgress = mode === 'inprogress';
+
+  // Driver is actively moving only when en route to pickup or en route to destination
+  const isDriverMoving = isEnRouteToPickup || isInProgress;
+
+  const isRideConfirmed = ['assigned', 'arriving', 'arrived', 'inprogress', 'completed'].includes(
+    mode,
+  );
+  // Show polyline ONLY after ride confirmation (when driver is assigned)
+  const showRoute = isRideConfirmed;
+
+  const fullActivePath = useMemo(() => {
+    if (isEnRouteToPickup || isSearchingDriver) return driverToPickupPath;
+    if (isInProgress || isArrivedAtPickup) return pickupToDestPath;
+    return pickupToDestPath; // default route preview
+  }, [
+    isEnRouteToPickup,
+    isSearchingDriver,
+    isInProgress,
+    isArrivedAtPickup,
+    driverToPickupPath,
+    pickupToDestPath,
+  ]);
+
+  // Dynamic interval per step to ensure exact timing (15s to pickup, 30s to dest)
+  const stepIntervalMs = useMemo(() => {
+    const totalSteps = fullActivePath.length;
+    if (totalSteps <= 1) return 200;
+    const targetDurationMs = isInProgress ? 30000 : 15000;
+    return Math.max(30, Math.floor(targetDurationMs / totalSteps));
+  }, [isInProgress, fullActivePath.length]);
+
+  // Reset driver index on stage change (preserve progress when moving from assigned -> arriving)
+  const prevModeRef = useRef<BookingMapMode>(mode);
+
   useEffect(() => {
-    const loop = Animated.loop(
-      Animated.sequence([
-        Animated.timing(pulseAnim, {
-          toValue: 1.4,
-          duration: 1300,
-          useNativeDriver: true,
-        }),
-        Animated.timing(pulseAnim, {
-          toValue: 1,
-          duration: 1300,
-          useNativeDriver: true,
-        }),
-      ]),
+    const prevMode = prevModeRef.current;
+    prevModeRef.current = mode;
+
+    const wasEnRoute = ['assigned', 'arriving'].includes(prevMode);
+    const isNowEnRoute = ['assigned', 'arriving'].includes(mode);
+    if (wasEnRoute && isNowEnRoute) return;
+
+    setDriverStepIndex(0);
+  }, [mode]);
+
+  // Driver location simulation interval tick (ONLY tick when driver is actively moving)
+  useEffect(() => {
+    if (!isDriverMoving) return;
+
+    const totalSteps = fullActivePath.length;
+    if (totalSteps === 0) return;
+
+    const interval = setInterval(() => {
+      setDriverStepIndex((prev) => {
+        if (prev >= totalSteps - 1) {
+          clearInterval(interval);
+          return totalSteps - 1;
+        }
+        return prev + 1;
+      });
+    }, stepIntervalMs);
+
+    return () => clearInterval(interval);
+  }, [isDriverMoving, fullActivePath, stepIntervalMs]);
+
+  // Current driver GPS & rhumb line bearing calculation using geolib
+  const driverPos = useMemo(() => {
+    if (isSearchingDriver) return FINVASIA_DRIVER_START;
+    if (isArrivedAtPickup) {
+      // Park bike slightly before pickup point on approach road so it doesn't overlap pickup marker pin
+      const len = driverToPickupPath.length;
+      return len > 4 ? driverToPickupPath[len - 4] : FINVASIA_DRIVER_START;
+    }
+    if (!fullActivePath || fullActivePath.length === 0) {
+      return isEnRouteToPickup ? FINVASIA_DRIVER_START : SM_HEIGHTS_PICKUP;
+    }
+    const idx = Math.min(driverStepIndex, fullActivePath.length - 1);
+    return fullActivePath[idx];
+  }, [
+    fullActivePath,
+    driverStepIndex,
+    isEnRouteToPickup,
+    isSearchingDriver,
+    isArrivedAtPickup,
+    driverToPickupPath,
+  ]);
+
+  const driverBearing = useMemo(() => {
+    if (isArrivedAtPickup) {
+      const len = driverToPickupPath.length;
+      if (len > 4) {
+        const from = driverToPickupPath[len - 5];
+        const to = driverToPickupPath[len - 4];
+        return (
+          getRhumbLineBearing(
+            { latitude: from.latitude, longitude: from.longitude },
+            { latitude: to.latitude, longitude: to.longitude },
+          ) + 270
+        );
+      }
+    }
+    if (!fullActivePath || fullActivePath.length < 2) return 45;
+    const idx = Math.min(driverStepIndex, fullActivePath.length - 1);
+    const prevIdx = Math.max(0, idx - 1);
+    const nextIdx = Math.min(fullActivePath.length - 1, idx + 1);
+
+    const from = fullActivePath[prevIdx];
+    const to = fullActivePath[nextIdx];
+
+    return (
+      getRhumbLineBearing(
+        { latitude: from.latitude, longitude: from.longitude },
+        { latitude: to.latitude, longitude: to.longitude },
+      ) + 270
     );
-    loop.start();
-    return () => loop.stop();
-  }, [pulseAnim]);
+  }, [fullActivePath, driverStepIndex, isArrivedAtPickup, driverToPickupPath]);
 
-  const showRoute = [
-    'search',
-    'preview',
-    'choose',
-    'confirm',
-    'assigned',
-    'arriving',
-    'inprogress',
-  ].includes(mode);
-  const dashed = mode === 'assigned';
-  const carPos =
-    mode === 'search'
-      ? { x: 210, y: 168 }
-      : mode === 'preview' || mode === 'choose' || mode === 'confirm'
-        ? { x: 210, y: 175 }
-        : mode === 'assigned'
-          ? { x: 250, y: 130 }
-          : mode === 'arriving'
-            ? { x: 208, y: 168 }
-            : mode === 'arrived'
-              ? { x: 200, y: 198 }
-              : mode === 'inprogress'
-                ? { x: 230, y: 195 }
-                : null;
+  // Rapido-style polyline trimming: remove travelled portion
+  const trimmedRouteCoords = useMemo(() => {
+    if (!showRoute) return [];
+    if (isArrivedAtPickup || mode === 'completed') {
+      // After reaching pickup or destination, remove polyline
+      return [];
+    }
+    if (isDriverMoving) {
+      return trimPolyline(fullActivePath, driverStepIndex, driverPos);
+    }
+    return fullActivePath;
+  }, [
+    showRoute,
+    isArrivedAtPickup,
+    mode,
+    isDriverMoving,
+    fullActivePath,
+    driverStepIndex,
+    driverPos,
+  ]);
 
-  const nearby =
-    mode === 'pickup'
-      ? MIXED_NEARBY
-      : mode === 'searching'
-        ? GROUP_NEARBY[selectedVehicle.group]
-        : mode === 'choose'
-          ? GROUP_NEARBY[selectedVehicle.group]
-          : [];
+  // Adjust mapRegion dynamically as driver location changes with calculated deltas
+  useEffect(() => {
+    if (!isFollowingDriver) return;
 
-  const activeMarker = carPos ? [{ icon: selectedIcon, ...toPercent(carPos.x, carPos.y) }] : [];
+    if (isEnRouteToPickup || isSearchingDriver) {
+      // Dynamic region centered between driver and pickup location
+      const target = SM_HEIGHTS_PICKUP;
+      const midLat = (driverPos.latitude + target.latitude) / 2;
+      const midLng = (driverPos.longitude + target.longitude) / 2;
+      const latDelta = Math.max(Math.abs(driverPos.latitude - target.latitude) * 1.6, 0.006);
+      const lngDelta = Math.max(Math.abs(driverPos.longitude - target.longitude) * 1.6, 0.006);
+
+      setMapRegion({
+        latitude: midLat,
+        longitude: midLng,
+        latitudeDelta: latDelta,
+        longitudeDelta: lngDelta,
+      });
+    } else if (isInProgress || isArrivedAtPickup) {
+      // Dynamic region centered between driver and destination location
+      const target = CP67_MALL_DESTINATION;
+      const midLat = (driverPos.latitude + target.latitude) / 2;
+      const midLng = (driverPos.longitude + target.longitude) / 2;
+      const latDelta = Math.max(Math.abs(driverPos.latitude - target.latitude) * 1.6, 0.006);
+      const lngDelta = Math.max(Math.abs(driverPos.longitude - target.longitude) * 1.6, 0.006);
+
+      setMapRegion({
+        latitude: midLat,
+        longitude: midLng,
+        latitudeDelta: latDelta,
+        longitudeDelta: lngDelta,
+      });
+    }
+  }, [
+    driverPos.latitude,
+    driverPos.longitude,
+    isFollowingDriver,
+    isEnRouteToPickup,
+    isSearchingDriver,
+    isInProgress,
+    isArrivedAtPickup,
+  ]);
+
+  // Recenter map region on bounds or initial location
+  const handleRecenter = useCallback(() => {
+    setIsFollowingDriver(true);
+
+    if (showRoute) {
+      const targetDest = isEnRouteToPickup ? SM_HEIGHTS_PICKUP : CP67_MALL_DESTINATION;
+      const allLocations = [
+        [SM_HEIGHTS_PICKUP.latitude, SM_HEIGHTS_PICKUP.longitude],
+        [targetDest.latitude, targetDest.longitude],
+        [driverPos.latitude, driverPos.longitude],
+      ];
+
+      const lats = allLocations.map((loc) => loc[0]);
+      const lngs = allLocations.map((loc) => loc[1]);
+
+      const minLat = Math.min(...lats);
+      const maxLat = Math.max(...lats);
+      const minLng = Math.min(...lngs);
+      const maxLng = Math.max(...lngs);
+
+      const midLat = (minLat + maxLat) / 2;
+      const midLng = (minLng + maxLng) / 2;
+
+      const latitudeDelta = Math.max((maxLat - minLat) * 1.6, 0.008);
+      const longitudeDelta = Math.max((maxLng - minLng) * 1.6, 0.008);
+
+      setMapRegion({
+        latitude: midLat,
+        longitude: midLng,
+        latitudeDelta,
+        longitudeDelta,
+      });
+    } else {
+      setMapRegion({
+        latitude: SM_HEIGHTS_PICKUP.latitude,
+        longitude: SM_HEIGHTS_PICKUP.longitude,
+        latitudeDelta: 0.012,
+        longitudeDelta: 0.012,
+      });
+    }
+  }, [showRoute, isEnRouteToPickup, driverPos]);
+
+  useEffect(() => {
+    handleRecenter();
+  }, [mode, handleRecenter]);
 
   return (
     <View style={styles.container}>
-      <StaticMapBackground />
-      <Svg
-        pointerEvents="none"
-        preserveAspectRatio="xMidYMid slice"
-        style={styles.overlaySvg}
-        viewBox="0 0 400 520"
+      <MapView
+        ref={mapRef}
+        style={styles.map}
+        region={mapRegion}
+        onRegionChangeComplete={(r) => {
+          // preserve user interaction
+        }}
+        showsUserLocation={true}
+        showsCompass={false}
+        showsScale={false}
+        showsMyLocationButton={false}
+        onPanDrag={() => setIsFollowingDriver(false)}
       >
-        <Defs>
-          <LinearGradient id="routeGrad" x1="0" y1="0" x2="1" y2="0">
-            <Stop offset="0%" stopColor="#FF8A00" />
-            <Stop offset="100%" stopColor="#FF5500" />
-          </LinearGradient>
-        </Defs>
-
-        {showRoute && (
-          <Path
-            d="M 92,150 C 150,148 190,190 250,186 C 300,182 330,150 348,142"
-            fill="none"
-            stroke="url(#routeGrad)"
-            strokeWidth="6"
-            strokeLinecap="round"
-            strokeDasharray={dashed ? '8,8' : undefined}
-          />
-        )}
-
-        {mode === 'searching' && (
+        {showRoute && trimmedRouteCoords.length > 1 && (
           <>
-            <Circle cx="200" cy="210" r="70" fill="rgba(255,107,0,0.08)" />
-            <Circle cx="200" cy="210" r="48" fill="rgba(255,107,0,0.12)" />
-            <Path
-              d="M 200,210 L 200,120 M 200,210 L 118,168 M 200,210 L 290,176 M 200,210 L 210,300"
-              stroke={Colors.primary}
-              strokeWidth="1.5"
-              strokeDasharray="4,6"
+            <Polyline
+              coordinates={trimmedRouteCoords}
+              strokeColor="rgba(255, 85, 0, 0.25)"
+              strokeWidth={10}
+              lineCap="round"
+              lineJoin="round"
+            />
+            <Polyline
+              coordinates={trimmedRouteCoords}
+              strokeColor="#FF5500"
+              strokeWidth={5}
+              lineCap="round"
+              lineJoin="round"
             />
           </>
         )}
-      </Svg>
-
-      <MapVehicleLayer markers={[...nearby, ...activeMarker]} />
-
-      {(mode === 'pickup' ||
-        mode === 'searching' ||
-        mode === 'assigned' ||
-        mode === 'arriving') && (
-        <View style={[styles.pinWrap, mode === 'assigned' ? styles.pinLeft : styles.pinCenter]}>
-          <View style={styles.bubble}>
-            <Text style={styles.bubbleText}>
-              {mode === 'searching'
-                ? 'Your pickup'
-                : mode === 'pickup'
-                  ? 'Pickup here'
-                  : 'Your pickup'}
-            </Text>
-          </View>
-          <View style={styles.orangeHalo} />
-          <View style={styles.orangePin} />
-        </View>
-      )}
-
-      {(mode === 'pickup' ||
-        mode === 'preview' ||
-        mode === 'assigned' ||
-        mode === 'arriving' ||
-        mode === 'arrived') && (
-        <View style={[styles.youWrap, mode === 'pickup' ? styles.youLower : styles.youNearPin]}>
-          {mode === 'pickup' && (
-            <View style={styles.bubble}>
-              <Text style={styles.bubbleText}>Your location</Text>
+        <Marker
+          coordinate={{
+            latitude: SM_HEIGHTS_PICKUP.latitude,
+            longitude: SM_HEIGHTS_PICKUP.longitude,
+          }}
+          anchor={{ x: 0.5, y: 0.5 }}
+        >
+          <View style={styles.markerContainer}>
+            <View style={styles.pickupPill}>
+              <Text style={styles.pickupPillText}>Pickup • SM Heights</Text>
             </View>
-          )}
-          <Animated.View
-            style={[
-              styles.blueHalo,
-              {
-                transform: [{ scale: pulseAnim }],
-                opacity: pulseAnim.interpolate({
-                  inputRange: [1, 1.4],
-                  outputRange: [0.35, 0.08],
-                }),
-              },
-            ]}
+            <View style={styles.pickupPinDot}>
+              <View style={styles.innerPinDot} />
+            </View>
+          </View>
+        </Marker>
+        {(showRoute || mode === 'inprogress') && (
+          <Marker
+            coordinate={{
+              latitude: CP67_MALL_DESTINATION.latitude,
+              longitude: CP67_MALL_DESTINATION.longitude,
+            }}
+            anchor={{ x: 0.5, y: 0.5 }}
+          >
+            <View style={styles.markerContainer}>
+              <View style={styles.destPill}>
+                <Text style={styles.destPillText}>Drop • CP 67 Mall</Text>
+              </View>
+              <View style={styles.destPinDot} />
+            </View>
+          </Marker>
+        )}
+        {(isRideConfirmed ||
+          mode === 'assigned' ||
+          mode === 'arriving' ||
+          mode === 'arrived' ||
+          mode === 'inprogress') && (
+          <Marker
+            coordinate={driverPos}
+            anchor={{ x: 0.5, y: 0.5 }}
+            flat={true}
+            rotation={driverBearing}
+          >
+            <MapVehicleMarker icon={selectedIcon} bearing={driverBearing} scale={1.5} />
+          </Marker>
+        )}
+      </MapView>
+      <View style={styles.controlsOverlay} pointerEvents="box-none">
+        <TouchableOpacity
+          activeOpacity={0.85}
+          style={[styles.recenterBtn, isFollowingDriver && styles.recenterBtnActive]}
+          onPress={handleRecenter}
+        >
+          <Ionicons
+            name={isFollowingDriver ? 'navigate' : 'navigate-outline'}
+            size={20}
+            color={isFollowingDriver ? Colors.primary : Colors.gray700}
           />
-          <View style={styles.blueDot} />
-        </View>
-      )}
-
-      {(mode === 'preview' || mode === 'choose' || mode === 'confirm' || mode === 'inprogress') && (
-        <>
-          <View style={styles.pickupFlag}>
-            <Text style={styles.flagText}>{mode === 'inprogress' ? '' : 'Pickup'}</Text>
-          </View>
-          <View style={styles.destFlag}>
-            <Text style={styles.destFlagText}>Destination</Text>
-          </View>
-        </>
-      )}
-
-      {(mode === 'preview' || mode === 'inprogress') && (
-        <View style={styles.etaBubble}>
-          <Text style={styles.etaMain}>{mode === 'inprogress' ? '2.5 km left' : '12 min'}</Text>
-          {mode === 'preview' && <Text style={styles.etaSub}>6.8 km</Text>}
-        </View>
-      )}
-
-      {mode === 'assigned' && (
-        <View style={styles.carEta}>
-          <Text style={styles.carEtaLabel}>Arriving in</Text>
-          <Text style={styles.carEtaVal}>3 min</Text>
-        </View>
-      )}
-
-      {mode === 'arriving' && (
-        <View style={styles.carEta}>
-          <Text style={styles.carEtaLabel}>Arriving in</Text>
-          <Text style={styles.carEtaVal}>2 min</Text>
-          <Text style={styles.etaSub}>700 m away</Text>
-        </View>
-      )}
-
-      {mode === 'arrived' && (
-        <View style={styles.arrivedBanner}>
-          <Text style={styles.arrivedBannerText}>Your driver{'\n'}has arrived!</Text>
-        </View>
-      )}
-
-      {mode === 'inprogress' && (
-        <View style={styles.onWayPill}>
-          <Text style={styles.onWayText}>On the way{'\n'}to destination</Text>
-        </View>
-      )}
+        </TouchableOpacity>
+      </View>
     </View>
   );
 };
 
-const overlayShadow = {
-  shadowColor: '#000',
-  shadowOffset: { width: 0, height: 2 },
-  shadowOpacity: 0.12,
-  shadowRadius: 5,
-  elevation: 3,
-};
-
 const styles = StyleSheet.create({
   container: {
-    position: 'absolute',
-    top: 0,
-    right: 0,
-    bottom: 0,
-    left: 0,
+    ...StyleSheet.absoluteFill,
     backgroundColor: '#E8EEF2',
   },
-  overlaySvg: {
+  map: {
+    ...StyleSheet.absoluteFill,
+    height: '66%',
+  },
+  controlsOverlay: {
     position: 'absolute',
-    top: 0,
-    right: 0,
-    bottom: 0,
-    left: 0,
+    right: 16,
+    top: 140,
+    zIndex: 20,
   },
-  pinWrap: {
-    position: 'absolute',
-    alignItems: 'center',
-  },
-  pinCenter: {
-    top: '34%',
-    left: 0,
-    right: 0,
-  },
-  pinLeft: {
-    top: '38%',
-    left: '18%',
-  },
-  youWrap: {
-    position: 'absolute',
-    alignItems: 'center',
-  },
-  youLower: {
-    top: '48%',
-    left: 0,
-    right: 0,
-  },
-  youNearPin: {
-    top: '44%',
-    left: '28%',
-  },
-  bubble: {
+  recenterBtn: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     backgroundColor: Colors.white,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.16,
+    shadowRadius: 6,
+    elevation: 4,
+  },
+  recenterBtnActive: {
+    borderWidth: 1.5,
+    borderColor: Colors.primary,
+  },
+  markerContainer: {
+    alignItems: 'center',
+  },
+  pickupPill: {
+    backgroundColor: Colors.secondary,
     paddingHorizontal: 10,
     paddingVertical: 5,
     borderRadius: 12,
-    marginBottom: 8,
-    ...overlayShadow,
+    marginBottom: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+    elevation: 3,
   },
-  bubbleText: {
+  pickupPillText: {
+    color: Colors.white,
     fontSize: 11,
-    fontWeight: '600',
-    color: Colors.textPrimary,
-    textAlign: 'center',
+    fontWeight: '700',
   },
-  orangeHalo: {
-    position: 'absolute',
-    bottom: -10,
-    width: 54,
-    height: 54,
-    borderRadius: 27,
-    backgroundColor: 'rgba(255,107,0,0.18)',
-  },
-  orangePin: {
+  pickupPinDot: {
     width: 22,
     height: 22,
     borderRadius: 11,
     backgroundColor: Colors.primary,
-    borderWidth: 3,
-    borderColor: Colors.white,
-  },
-  blueHalo: {
-    position: 'absolute',
-    width: 42,
-    height: 42,
-    borderRadius: 21,
-    backgroundColor: '#60A5FA',
-    bottom: -14,
-  },
-  blueDot: {
-    width: 14,
-    height: 14,
-    borderRadius: 7,
-    backgroundColor: '#2563EB',
-    borderWidth: 3,
-    borderColor: Colors.white,
-  },
-  pickupFlag: {
-    position: 'absolute',
-    top: '22%',
-    left: '16%',
-    backgroundColor: Colors.primary,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 8,
-  },
-  destFlag: {
-    position: 'absolute',
-    top: '24%',
-    right: '10%',
-    backgroundColor: '#EF4444',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 8,
-  },
-  flagText: {
-    color: Colors.white,
-    fontSize: 10,
-    fontWeight: '700',
-  },
-  destFlagText: {
-    color: Colors.white,
-    fontSize: 10,
-    fontWeight: '700',
-  },
-  etaBubble: {
-    position: 'absolute',
-    top: '32%',
-    alignSelf: 'center',
-    left: '42%',
-    backgroundColor: Colors.white,
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 12,
-    ...overlayShadow,
-  },
-  etaMain: {
-    fontSize: 12,
-    fontWeight: '800',
-    color: Colors.textPrimary,
-  },
-  etaSub: {
-    fontSize: 11,
-    color: Colors.gray500,
-    textAlign: 'center',
-  },
-  carEta: {
-    position: 'absolute',
-    top: '18%',
-    right: '18%',
-    backgroundColor: Colors.white,
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 12,
     alignItems: 'center',
-    ...overlayShadow,
+    justifyContent: 'center',
+    borderWidth: 2.5,
+    borderColor: Colors.white,
   },
-  carEtaLabel: {
-    fontSize: 11,
-    color: Colors.gray600,
+  innerPinDot: {
+    width: 7,
+    height: 7,
+    borderRadius: 3.5,
+    backgroundColor: Colors.white,
   },
-  carEtaVal: {
-    fontSize: 16,
-    fontWeight: '800',
-    color: Colors.primary,
-  },
-  arrivedBanner: {
-    position: 'absolute',
-    top: '28%',
-    alignSelf: 'center',
-    left: '32%',
-    backgroundColor: Colors.primary,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 12,
-  },
-  arrivedBannerText: {
-    color: Colors.white,
-    fontSize: 12,
-    fontWeight: '700',
-    textAlign: 'center',
-  },
-  onWayPill: {
-    position: 'absolute',
-    top: '42%',
-    left: '18%',
-    backgroundColor: '#FFF1E6',
+  destPill: {
+    backgroundColor: '#10B981',
     paddingHorizontal: 10,
-    paddingVertical: 6,
+    paddingVertical: 5,
     borderRadius: 12,
+    marginBottom: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+    elevation: 3,
   },
-  onWayText: {
+  destPillText: {
+    color: Colors.white,
     fontSize: 11,
-    fontWeight: '600',
-    color: Colors.primary,
+    fontWeight: '700',
+  },
+  destPinDot: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    backgroundColor: '#10B981',
+    borderWidth: 2.5,
+    borderColor: Colors.white,
   },
 });
 

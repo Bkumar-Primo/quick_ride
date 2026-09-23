@@ -1,6 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import type React from 'react';
 import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { images } from '../../../assets';
 import { Colors } from '../../constants/colors';
 import { Layout } from '../../constants/layout';
 import type { DriverInfo, VehicleOption } from '../../types';
@@ -23,12 +24,17 @@ export const DriverRidePanel: React.FC<{
         ? 'bus-outline'
         : 'car';
 
+  const carImageSource =
+    vehicle?.imageUrl ||
+    (typeof driver.carImageUrl === 'string' ? { uri: driver.carImageUrl } : driver.carImageUrl);
+
   return (
     <View>
       <View style={styles.topRow}>
         <View style={styles.identity}>
           <View>
-            <Avatar name={driver.name} source={driver.avatar} size={56} />
+            {/* <Avatar name={driver.name} source={driver.avatar} size={56} /> */}
+            <Image source={images.driver} style={{ height: 56, width: 56, borderRadius: 28 }} />
             <View style={styles.ratingBadge}>
               <Ionicons name="star" size={10} color="#F59E0B" />
               <Text style={styles.ratingText}>{driver.rating.toFixed(1)}</Text>
@@ -56,12 +62,8 @@ export const DriverRidePanel: React.FC<{
       </View>
 
       <View style={styles.carRow}>
-        {driver.carImageUrl ? (
-          <Image
-            source={{ uri: driver.carImageUrl }}
-            style={styles.carImage}
-            resizeMode="contain"
-          />
+        {carImageSource ? (
+          <Image source={carImageSource} style={styles.carImage} resizeMode="contain" />
         ) : (
           <View style={styles.carFallback}>
             <Ionicons name={fallbackIcon} size={28} color={Colors.gray400} />

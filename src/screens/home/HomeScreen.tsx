@@ -76,7 +76,7 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
           <View style={styles.greetingRow}>
             <View style={styles.greetingTextWrap}>
               <Text style={styles.helloLine}>
-                <Text style={styles.helloMuted}>Hello, </Text>
+                <Text style={styles.helloMuted}>Hi, </Text>
                 <Text style={styles.helloName}>{firstName} </Text>
                 <Text>👋</Text>
               </Text>

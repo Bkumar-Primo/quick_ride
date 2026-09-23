@@ -1,22 +1,19 @@
+import { images } from '../../assets';
 import type { DriverInfo, VehicleOption } from '../types';
 
-const CAR_IMAGE =
-  'https://images.unsplash.com/photo-1619767886558-efdc259cde1a?w=640&auto=format&fit=crop&q=80';
-const BIKE_IMAGE =
-  'https://images.unsplash.com/photo-1558981806-ec527fa84c39?w=640&auto=format&fit=crop&q=80';
-const AUTO_IMAGE =
-  'https://images.unsplash.com/photo-1600328147131-93700d901c35?w=640&auto=format&fit=crop&q=80';
+const CAR_IMAGE = images.cabPremium;
+const BIKE_IMAGE = images.bikeLite;
+const AUTO_IMAGE = images.auto;
 
 export const MOCK_DRIVERS: DriverInfo[] = [
   {
     id: 'drv-bike',
     name: 'Suresh Yadav',
     phone: '+91 98110 33445',
-    avatar:
-      'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=200&auto=format&fit=crop&q=80',
+    avatar: images.bikeLite,
     rating: 4.9,
     totalTrips: 3480,
-    carModel: 'Honda Activa',
+    carModel: 'Hero Splender',
     carColor: 'Black',
     carNumber: 'HR 26 BK 2190',
     carCategory: 'Bike',

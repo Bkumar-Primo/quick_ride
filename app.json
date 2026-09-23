@@ -14,11 +14,24 @@
           "locationAlwaysAndWhenInUsePermission": "QuickRide needs your location to find nearby drivers, show accurate pickup points, and give you a smooth ride."
         }
       ],
-      "expo-font"
+      "expo-font",
+      [
+        "expo-build-properties",
+        {
+          "ios": {
+            "enableSceneSupport": true
+          }
+        }
+      ]
     ],
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.rahulthakurformedics.QuickRide",
+      "config": {
+        "googleMaps": {
+          "apiKey": "AIzaSyAOiId9RuxateADuVwxPeDfGd3n6B224h8"
+        }
+      },
       "infoPlist": {
         "NSLocationWhenInUseUsageDescription": "QuickRide needs your location to find nearby drivers, show accurate pickup points, and give you a smooth ride.",
         "NSLocationAlwaysAndWhenInUseUsageDescription": "QuickRide needs your location to find nearby drivers, show accurate pickup points, and give you a smooth ride."
@@ -26,6 +39,11 @@
     },
     "android": {
       "package": "com.rahulthakurformedics.QuickRide",
+      "config": {
+        "googleMaps": {
+          "apiKey": "AIzaSyAOiId9RuxateADuVwxPeDfGd3n6B224h8"
+        }
+      },
       "permissions": ["ACCESS_COARSE_LOCATION", "ACCESS_FINE_LOCATION"],
       "adaptiveIcon": {
         "backgroundColor": "#111111",
