@@ -95,7 +95,7 @@ export const SingleRideFlowSheet: React.FC<Props> = ({
   const activeGroup = selectedVehicle.group;
   const options = vehiclesInGroup(activeGroup);
 
-  const maxSheetHeight = SCREEN_HEIGHT - (insets.top + 90);
+  const _maxSheetHeight = SCREEN_HEIGHT - (insets.top + 90);
 
   // Fixed snap point per step. ROUTE_PREVIEW uses 78% (Cab height) so sheet never goes down when changing options.
   const stepSnapPoint = useMemo(() => {
@@ -174,7 +174,7 @@ export const SingleRideFlowSheet: React.FC<Props> = ({
   const vehicleIconName: keyof typeof Ionicons.glyphMap =
     selectedVehicle.group === 'bike' ? 'bicycle' : selectedVehicle.group === 'auto' ? 'bus' : 'car';
 
-  const hasArrived = currentStatus === 'DRIVER_ARRIVED';
+  const _hasArrived = currentStatus === 'DRIVER_ARRIVED';
 
   // Account for bottom tab bar height (~75-90px) so buttons are never cut off
   // const bottomPad = Math.max(insets.bottom + 75, 90);
@@ -820,13 +820,12 @@ export const SingleRideFlowSheet: React.FC<Props> = ({
           ) : null}
         </View>
 
-        {isInProgress ? (
-          <SoftPillButton
-            title="Safety & Emergency Support"
-            onPress={onOpenSafety}
-            style={{ marginTop: 10 }}
-          />
-        ) : !isArrived ? (
+        {isInProgress ? // <SoftPillButton
+        //   title="Safety & Emergency Support"
+        //   onPress={onOpenSafety}
+        //   style={{ marginTop: 10 }}
+        // />
+        null : !isArrived ? (
           <SoftPillButton title="Cancel Ride" onPress={cancelRide} style={{ marginTop: 10 }} />
         ) : (
           <Text style={styles.hint}>Your ride will begin automatically in a few seconds.</Text>

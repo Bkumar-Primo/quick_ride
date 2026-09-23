@@ -1,17 +1,19 @@
 import { create } from 'zustand';
 import {
+  CP67_MALL_DESTINATION,
   CURRENT_LOCATION,
   driverForVehicle,
   MOCK_OFFERS,
   MOCK_VEHICLES,
   POPULAR_DESTINATIONS,
+  SM_HEIGHTS_PICKUP,
 } from '../data';
 import type { ActiveRide, LocationPoint, PromoCode, RideStatus, VehicleOption } from '../types';
 import { useUserStore } from './userStore';
 
-const DRIVER_ARRIVAL_DELAY_MS = 4500;
-const TRIP_START_DELAY_MS = 4500;
-const RIDE_END_DELAY_MS = 10000;
+const DRIVER_ARRIVAL_DELAY_MS = 15000; // 15 seconds heading to pickup
+const TRIP_START_DELAY_MS = 3000; // 3 seconds pause at pickup
+const RIDE_END_DELAY_MS = 30000; // 30 seconds pickup to destination
 
 export type FlowStep =
   | 'IDLE'
@@ -54,8 +56,8 @@ interface RideState {
 export const useRideStore = create<RideState>((set, get) => ({
   currentStatus: 'IDLE',
   flowStep: 'IDLE',
-  pickup: CURRENT_LOCATION,
-  destination: POPULAR_DESTINATIONS[0],
+  pickup: SM_HEIGHTS_PICKUP,
+  destination: CP67_MALL_DESTINATION,
   selectedVehicle: MOCK_VEHICLES[0],
   appliedPromo: MOCK_OFFERS[0], // QUICK50
   activeRide: null,

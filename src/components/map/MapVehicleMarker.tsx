@@ -5,23 +5,28 @@ import type { VehicleOption } from '../../types';
 
 export type MapVehicleIcon = Exclude<keyof typeof images, 'staticMap'>;
 
-type Marker = {
+export type MarkerData = {
   icon: MapVehicleIcon;
-  x: number;
-  y: number;
+  x?: number;
+  y?: number;
   flip?: boolean;
+  bearing?: number;
+  scale?: number;
 };
 
 const ICON_SIZE: Record<MapVehicleIcon, { width: number; height: number }> = {
-  bikeLite: { width: 54, height: 36 },
-  bikePlus: { width: 58, height: 38 },
-  auto: { width: 58, height: 44 },
-  cabEconomy: { width: 66, height: 40 },
-  cabPremium: { width: 68, height: 42 },
-  cabSuv: { width: 72, height: 44 },
+  bikeLite: { width: 48, height: 32 },
+  bikePlus: { width: 52, height: 34 },
+  auto: { width: 52, height: 40 },
+  cabEconomy: { width: 58, height: 36 },
+  cabPremium: { width: 60, height: 38 },
+  cabSuv: { width: 64, height: 40 },
 };
 
-export const mapIconForVehicle = (vehicle: Pick<VehicleOption, 'id' | 'group'>): MapVehicleIcon => {
+export const mapIconForVehicle = (
+  vehicle?: Pick<VehicleOption, 'id' | 'group'> | null,
+): MapVehicleIcon => {
+  if (!vehicle) return 'cabEconomy';
   switch (vehicle.id) {
     case 'veh-bike':
       return 'bikeLite';
@@ -42,34 +47,65 @@ export const mapIconForVehicle = (vehicle: Pick<VehicleOption, 'id' | 'group'>):
   }
 };
 
-export const MapVehicleMarker: React.FC<Marker> = ({ icon, x, y, flip }) => {
-  const size = ICON_SIZE[icon];
+export const MapVehicleMarker: React.FC<MarkerData> = ({
+  icon,
+  x,
+  y,
+  flip,
+  bearing = 0,
+  scale = 1,
+}) => {
+  const size = ICON_SIZE[icon] || ICON_SIZE.cabEconomy;
+  const width = size.width * scale;
+  const height = size.height * scale;
+
+  // Vehicle PNG assets in assets/ face Right (90deg East) in raw format.
+  // Subtracting 90deg aligns the front of the vehicle with 0deg North / heading direction.
+  const adjustedBearing = (bearing - 90 + 360) % 360;
+
+  const transformStyle = [{ rotate: `${adjustedBearing}deg` }, flip ? { scaleX: -1 } : null].filter(
+    Boolean,
+  ) as any;
+
+  if (x !== undefined && y !== undefined) {
+    return (
+      <View
+        pointerEvents="none"
+        style={[
+          styles.wrap,
+          {
+            left: `${x}%`,
+            top: `${y}%`,
+            width,
+            height,
+            marginLeft: -width / 2,
+            marginTop: -height / 2,
+          },
+        ]}
+      >
+        <View style={styles.halo} />
+        <Image
+          source={images[icon]}
+          style={[styles.image, { width, height, transform: transformStyle }]}
+          resizeMode="contain"
+        />
+      </View>
+    );
+  }
+
   return (
-    <View
-      pointerEvents="none"
-      style={[
-        styles.wrap,
-        {
-          left: `${x}%`,
-          top: `${y}%`,
-          width: size.width,
-          height: size.height,
-          marginLeft: -size.width / 2,
-          marginTop: -size.height / 2,
-        },
-      ]}
-    >
+    <View style={[styles.standaloneWrap, { width, height }]}>
       <View style={styles.halo} />
       <Image
         source={images[icon]}
-        style={[styles.image, size, flip && styles.flip]}
+        style={[styles.image, { width, height, transform: transformStyle }]}
         resizeMode="contain"
       />
     </View>
   );
 };
 
-export const MapVehicleLayer: React.FC<{ markers: Marker[] }> = ({ markers }) => (
+export const MapVehicleLayer: React.FC<{ markers: MarkerData[] }> = ({ markers }) => (
   <View pointerEvents="none" style={styles.layer}>
     {markers.map((marker, index) => (
       <MapVehicleMarker key={`${marker.icon}-${index}`} {...marker} />
@@ -90,17 +126,18 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  standaloneWrap: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   halo: {
     position: 'absolute',
-    width: '72%',
-    height: '72%',
+    width: '78%',
+    height: '78%',
     borderRadius: 999,
-    backgroundColor: 'rgba(255, 107, 0, 0.14)',
+    backgroundColor: 'rgba(255, 107, 0, 0.16)',
   },
   image: {
     zIndex: 1,
-  },
-  flip: {
-    transform: [{ scaleX: -1 }],
   },
 });
