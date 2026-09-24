@@ -8,10 +8,11 @@ import { Colors } from '../../constants/colors';
 import { Layout } from '../../constants/layout';
 import type { AuthStackParamList } from '../../navigation/types';
 import { useAuthStore } from '../../store/authStore';
+import { images } from '../../../assets';
 
 type Props = NativeStackScreenProps<AuthStackParamList, 'AllSet'>;
 
-const heroArt = require('../../assets/images/allset_image.png');
+const heroArt = images.allSet;
 
 const BENEFITS = [
   {

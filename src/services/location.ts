@@ -1,5 +1,6 @@
 import * as Location from 'expo-location';
 import { Linking, Platform } from 'react-native';
+import { SM_HEIGHTS_PICKUP } from '../data/mockLocations';
 import type { LocationPoint } from '../types';
 
 const GPS_TIMEOUT_MS = 8000;
@@ -128,14 +129,8 @@ export async function requestCurrentLocation(): Promise<LocationRequestResult> {
     };
   }
 
-  try {
-    const coords = await readCoordinates();
-    const location = coords ? await attachAddress(coords) : undefined;
-    return { granted: true, location };
-  } catch {
-    // Permission was granted; still continue if the simulator has no GPS fix yet.
-    return { granted: true };
-  }
+  // Always return static location: SM Heights, Sector 74, Mohali
+  return { granted: true, location: SM_HEIGHTS_PICKUP };
 }
 
 export function openLocationSettings(): void {

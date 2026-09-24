@@ -11,4 +11,5 @@ export const images = {
   cab2D: require('./cab-2D.png'),
   driver: require('./driver.png'),
   qrAppIcon: require('./qr-app-icon.png'),
+  allSet: require("./all-set.png")
 };

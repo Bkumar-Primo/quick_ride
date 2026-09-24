@@ -1,13 +1,14 @@
 import { Ionicons } from '@expo/vector-icons';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type React from 'react';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import {
   Platform,
   SafeAreaView,
   ScrollView,
   StyleSheet,
   Text,
+  TextInput,
   TouchableOpacity,
   View,
 } from 'react-native';
@@ -34,6 +35,9 @@ export const EditProfileScreen: React.FC<Props> = ({ navigation }) => {
   const [phone, setPhone] = useState(user.phone);
   const [email, setEmail] = useState(user.email);
   const [loading, setLoading] = useState(false);
+
+  const phoneInputRef = useRef<TextInput>(null);
+  const emailInputRef = useRef<TextInput>(null);
 
   const handleSave = () => {
     setLoading(true);
@@ -83,24 +87,34 @@ export const EditProfileScreen: React.FC<Props> = ({ navigation }) => {
             onChangeText={setName}
             icon="person-outline"
             placeholder="Your name"
+            returnKeyType="next"
+            onSubmitEditing={() => phoneInputRef.current?.focus()}
+            blurOnSubmit={false}
           />
 
           <Input
+            ref={phoneInputRef}
             label="Phone Number"
             value={phone}
             onChangeText={setPhone}
             icon="call-outline"
             placeholder="Your phone"
             keyboardType="phone-pad"
+            returnKeyType="next"
+            onSubmitEditing={() => emailInputRef.current?.focus()}
+            blurOnSubmit={false}
           />
 
           <Input
+            ref={emailInputRef}
             label="Email Address"
             value={email}
             onChangeText={setEmail}
             icon="mail-outline"
             placeholder="Your email"
             keyboardType="email-address"
+            returnKeyType="done"
+            onSubmitEditing={handleSave}
           />
         </View>
 

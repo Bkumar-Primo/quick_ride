@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type React from 'react';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { Image, Platform, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { KeyboardAvoidingView, KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -26,6 +26,7 @@ export const ProfileSetupScreen: React.FC<Props> = ({ navigation }) => {
   const [email, setEmail] = useState('');
   const [nameError, setNameError] = useState('');
   const [emailError, setEmailError] = useState('');
+  const emailInputRef = useRef<TextInput>(null);
 
   const goToLocation = () => {
     navigation.navigate('LocationPermission');
@@ -109,6 +110,8 @@ export const ProfileSetupScreen: React.FC<Props> = ({ navigation }) => {
             autoComplete="name"
             textContentType="name"
             returnKeyType="next"
+            onSubmitEditing={() => emailInputRef.current?.focus()}
+            blurOnSubmit={false}
           />
         </View>
         {nameError ? <Text style={styles.errorText}>{nameError}</Text> : null}
@@ -117,6 +120,7 @@ export const ProfileSetupScreen: React.FC<Props> = ({ navigation }) => {
         <View style={[styles.inputRow, emailError ? styles.inputRowError : null]}>
           <Ionicons name="mail-outline" size={20} color="#94A3B8" style={styles.inputIcon} />
           <TextInput
+            ref={emailInputRef}
             style={styles.input}
             placeholder="Enter your email address"
             placeholderTextColor="#94A3B8"

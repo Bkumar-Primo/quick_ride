@@ -13,10 +13,8 @@ export const FINVASIA_DRIVER_START: LocationPoint = {
 export const SM_HEIGHTS_PICKUP: LocationPoint = {
   id: 'loc-sm-heights',
   title: 'SM Heights',
-  subtitle: 'Industrial Area Phase 8B, Mohali',
-  address: 'SM Heights, Sector 74, Sahibzada Ajit Singh Nagar, Punjab 160055',
-  // latitude: 30.7060817,
-  // longitude: 76.6856152,
+  subtitle: 'Sector 74, Mohali',
+  address: 'SM Heights, Sector 74, Sahibzada Ajit Singh Nagar, Mohali, Punjab 160055',
   latitude: 30.707121,
   longitude: 76.685022,
   type: 'recent',

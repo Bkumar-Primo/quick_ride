@@ -10,6 +10,7 @@ import { Button } from '../../components/common/Button';
 import { QuickRideLogo } from '../../components/common/QuickRideLogo';
 import { Colors } from '../../constants/colors';
 import { Layout } from '../../constants/layout';
+import { SM_HEIGHTS_PICKUP } from '../../data/mockLocations';
 import type { AuthStackParamList } from '../../navigation/types';
 import { openLocationSettings, requestCurrentLocation } from '../../services/location';
 import { useRideStore } from '../../store/rideStore';
@@ -37,9 +38,7 @@ export const LocationPermissionScreen: React.FC<Props> = ({ navigation }) => {
     requestingRef.current = false;
 
     if (result.granted) {
-      if (result.location) {
-        useRideStore.getState().setPickup(result.location);
-      }
+      useRideStore.getState().setPickup(result.location || SM_HEIGHTS_PICKUP);
       goToAllSet();
       return;
     }

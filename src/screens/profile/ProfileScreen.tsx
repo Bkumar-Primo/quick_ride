@@ -184,7 +184,7 @@ export const ProfileScreen: React.FC<any> = ({ navigation }) => {
         </View>
 
         {/* Client Demo Controls */}
-        <Text style={styles.menuSectionTitle}>Demo Presentation Controls</Text>
+        {/* <Text style={styles.menuSectionTitle}>Demo Presentation Controls</Text>
         <View style={styles.menuBox}>
           <TouchableOpacity style={styles.menuRow} activeOpacity={0.7} onPress={handleResetDemo}>
             <View style={styles.menuLeft}>
@@ -200,7 +200,7 @@ export const ProfileScreen: React.FC<any> = ({ navigation }) => {
             </View>
             <Ionicons name="chevron-forward" size={18} color={Colors.gray400} />
           </TouchableOpacity>
-        </View>
+        </View> */}
 
         {/* Logout Button */}
         <TouchableOpacity activeOpacity={0.7} onPress={handleLogout} style={styles.logoutBtn}>

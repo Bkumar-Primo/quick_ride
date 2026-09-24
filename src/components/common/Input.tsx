@@ -1,5 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
-import type React from 'react';
+import React from 'react';
 import {
   StyleSheet,
   Text,
@@ -24,21 +24,25 @@ interface InputProps extends TextInputProps {
   containerStyle?: ViewStyle;
 }
 
-export const Input: React.FC<InputProps> = ({
-  label,
-  error,
-  icon,
-  isPhoneInput = false,
-  countryCode = '+91',
-  countryFlag = '🇮🇳',
-  onPressCountryCode,
-  onClear,
-  value,
-  containerStyle,
-  style,
-  ...props
-}) => {
-  return (
+export const Input = React.forwardRef<TextInput, InputProps>(
+  (
+    {
+      label,
+      error,
+      icon,
+      isPhoneInput = false,
+      countryCode = '+91',
+      countryFlag = '🇮🇳',
+      onPressCountryCode,
+      onClear,
+      value,
+      containerStyle,
+      style,
+      ...props
+    },
+    ref,
+  ) => {
+    return (
     <View style={[styles.wrapper, containerStyle]}>
       {label && <Text style={styles.label}>{label}</Text>}
       <View style={[styles.container, error ? styles.containerError : null]}>
@@ -58,6 +62,7 @@ export const Input: React.FC<InputProps> = ({
         ) : null}
 
         <TextInput
+          ref={ref}
           style={[styles.input, style]}
           placeholderTextColor={Colors.gray400}
           value={value}
@@ -77,7 +82,7 @@ export const Input: React.FC<InputProps> = ({
       {error ? <Text style={styles.errorText}>{error}</Text> : null}
     </View>
   );
-};
+});
 
 const styles = StyleSheet.create({
   wrapper: {

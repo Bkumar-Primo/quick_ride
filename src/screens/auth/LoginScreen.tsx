@@ -2,9 +2,10 @@ import { Ionicons } from '@expo/vector-icons';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { LinearGradient } from 'expo-linear-gradient';
 import type React from 'react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   Image,
+  Keyboard,
   Platform,
   ScrollView,
   StyleSheet,
@@ -66,8 +67,24 @@ export const LoginScreen: React.FC<Props> = ({ navigation }) => {
   const [pickerOpen, setPickerOpen] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
   const requestOtp = useAuthStore((state) => state.requestOtp);
   const { showDialog } = useAppDialog();
+
+  useEffect(() => {
+    const showSub = Keyboard.addListener(
+      Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow',
+      () => setIsKeyboardVisible(true),
+    );
+    const hideSub = Keyboard.addListener(
+      Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide',
+      () => setIsKeyboardVisible(false),
+    );
+    return () => {
+      showSub.remove();
+      hideSub.remove();
+    };
+  }, []);
 
   const handlePhoneChange = (text: string) => {
     setError('');
@@ -125,7 +142,9 @@ export const LoginScreen: React.FC<Props> = ({ navigation }) => {
 
         <View style={styles.welcomeBlock}>
           <Text style={styles.welcomeTitle}>Welcome{'\n'}back!</Text>
-          <Text style={styles.welcomeSubtitle}>Log in to continue{'\n'}your journey.</Text>
+          {!isKeyboardVisible && (
+            <Text style={styles.welcomeSubtitle}>Log in to continue{'\n'}your journey.</Text>
+          )}
         </View>
       </View>
 
