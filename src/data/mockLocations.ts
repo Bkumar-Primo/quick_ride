@@ -197,106 +197,76 @@ export const DEMO_ROUTE = {
   estimatedFare: 180,
 };
 
-export const GURUGRAM_HOME: LocationPoint = {
-  id: 'loc-home-ggn',
+export const MOHALI_HOME: LocationPoint = {
+  id: 'loc-home-mohali',
   title: 'Home',
-  subtitle: 'Sector 56',
-  address: 'Sector 56, Gurugram, Haryana 122011',
-  latitude: 28.4245,
-  longitude: 77.101,
+  subtitle: 'Sector 70, Mohali',
+  address: 'Sector 70, Sahibzada Ajit Singh Nagar, Mohali, Punjab 160071',
+  latitude: 30.6947,
+  longitude: 76.7121,
   type: 'home',
 };
 
-export const DLF_CYBER_CITY: LocationPoint = {
-  id: 'loc-cyber',
-  title: 'DLF Cyber City',
-  subtitle: 'Phase 2, Gurugram',
-  address: 'DLF Cyber City, Gurugram, Haryana 122002',
-  latitude: 28.4946,
-  longitude: 77.0882,
-  type: 'work',
-};
+export const GURUGRAM_HOME: LocationPoint = MOHALI_HOME;
 
-export const AMBIENCE_MALL: LocationPoint = {
-  id: 'loc-ambience',
-  title: 'Ambience Mall',
-  subtitle: 'National Highway 8, Gurugram',
-  address: 'Ambience Mall, NH-8, Gurugram, Haryana 122002',
-  latitude: 28.5055,
-  longitude: 77.0969,
+export const DLF_CYBER_CITY: LocationPoint = CP67_MALL_DESTINATION;
+
+export const VR_PUNJAB_MALL: LocationPoint = {
+  id: 'loc-vr-punjab',
+  title: 'VR Punjab Mall',
+  subtitle: 'Kharar - Landran Rd, Mohali',
+  address: 'VR Punjab Mall, NH-21, Kharar, Mohali, Punjab 140301',
+  latitude: 30.738,
+  longitude: 76.657,
   type: 'popular',
 };
 
-export const IGI_AIRPORT: LocationPoint = {
-  id: 'loc-igi',
-  title: 'IGI Airport',
-  subtitle: 'Indira Gandhi International Airport',
-  address: 'Indira Gandhi International Airport, New Delhi 110037',
-  latitude: 28.5562,
-  longitude: 77.1,
+export const AMBIENCE_MALL: LocationPoint = VR_PUNJAB_MALL;
+
+export const MOHALI_AIRPORT: LocationPoint = {
+  id: 'loc-ixc-airport',
+  title: 'Chandigarh Int. Airport (IXC)',
+  subtitle: 'Airport Road, Mohali',
+  address: 'Chandigarh International Airport, New Civil Air Terminal, Mohali, Punjab 160004',
+  latitude: 30.6735,
+  longitude: 76.7885,
   type: 'airport',
 };
 
+export const IGI_AIRPORT: LocationPoint = MOHALI_AIRPORT;
+
+export const PHASE_3B2_MARKET: LocationPoint = {
+  id: 'loc-phase3b2',
+  title: 'Phase 3B2 Market',
+  subtitle: 'Sector 60, Mohali',
+  address: 'Phase 3B2 Market, Sector 60, Mohali, Punjab 160059',
+  latitude: 30.7104,
+  longitude: 76.7214,
+  type: 'popular',
+};
+
 export const POPULAR_DESTINATIONS: LocationPoint[] = [
-  DLF_CYBER_CITY,
-  AMBIENCE_MALL,
-  IGI_AIRPORT,
-  SAHARA_MALL,
-  KINGDOM_OF_DREAMS,
-  ARAVALLI_PARK,
-  MG_ROAD_METRO,
+  CP67_MALL_DESTINATION,
+  VR_PUNJAB_MALL,
+  MOHALI_AIRPORT,
+  PHASE_3B2_MARKET,
+  MOHALI_HOME,
   {
-    id: 'loc-bkc',
-    title: 'Bandra Kurla Complex (BKC)',
-    subtitle: 'G Block, BKC, Bandra East, Mumbai',
-    address: 'Bandra Kurla Complex, G Block, Bandra East, Mumbai, Maharashtra 400051',
-    latitude: 19.0657,
-    longitude: 72.8687,
-    type: 'work',
-  },
-  {
-    id: 'loc-airport',
-    title: 'Chhatrapati Shivaji Terminal 2',
-    subtitle: 'International Airport, Sahar, Andheri East',
-    address: 'Terminal 2, Mumbai International Airport, Andheri East, Mumbai 400099',
-    latitude: 19.0974,
-    longitude: 72.8744,
-    type: 'airport',
-  },
-  {
-    id: 'loc-powai',
-    title: 'Hiranandani Gardens, Powai',
-    subtitle: 'Central Ave, Hiranandani Business Park',
-    address: 'Central Avenue, Hiranandani Gardens, Powai, Mumbai 400076',
-    latitude: 19.1197,
-    longitude: 72.9056,
+    id: 'loc-bestech',
+    title: 'Bestech Square Mall',
+    subtitle: 'Sector 66, Mohali',
+    address: 'Bestech Square Mall, Sector 66, Mohali, Punjab 160062',
+    latitude: 30.6865,
+    longitude: 76.7325,
     type: 'popular',
   },
   {
-    id: 'loc-juhu',
-    title: 'Juhu Beach & Tara Road',
-    subtitle: 'Juhu Tara Rd, Juhu, Mumbai',
-    address: 'Juhu Tara Road, Juhu, Mumbai, Maharashtra 400049',
-    latitude: 19.0988,
-    longitude: 72.8267,
-    type: 'popular',
-  },
-  {
-    id: 'loc-marinedrive',
-    title: 'Marine Drive Promenade',
-    subtitle: 'Netaji Subhash Chandra Bose Rd, Churchgate',
-    address: 'Marine Drive, Nariman Point, Mumbai, Maharashtra 400021',
-    latitude: 18.9432,
-    longitude: 72.8236,
-    type: 'popular',
-  },
-  {
-    id: 'loc-home',
-    title: 'Home (Green Heights Apt)',
-    subtitle: 'Tower 3, Apt 1102, Link Road, Malad West',
-    address: 'New Link Road, Malad West, Mumbai 400064',
-    latitude: 19.1864,
-    longitude: 72.8347,
-    type: 'home',
+    id: 'loc-sec70-market',
+    title: 'Sector 70 Market',
+    subtitle: 'Sector 70, Mohali',
+    address: 'Sector 70 Market, Mohali, Punjab 160071',
+    latitude: 30.695,
+    longitude: 76.713,
+    type: 'recent',
   },
 ];

@@ -81,11 +81,17 @@ export const ActiveRideScreen: React.FC<Props> = ({ navigation }) => {
 
         <View style={styles.bottomGrid}>
           <View style={styles.routeCol}>
-            <Text style={styles.place}>{activeRide.pickup.title}</Text>
-            <Text style={styles.city}>Gurugram, Haryana</Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+              <Ionicons name="location-sharp" size={16} color="#10B981" />
+              <Text style={styles.place}>{activeRide.pickup.title}</Text>
+            </View>
+            <Text style={styles.city}>Mohali, Punjab</Text>
             <Text style={styles.time}>9:12 AM · Picked up</Text>
-            <Text style={[styles.place, { marginTop: 10 }]}>{activeRide.destination.title}</Text>
-            <Text style={styles.city}>Gurugram, Haryana</Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 10 }}>
+              <Ionicons name="location-sharp" size={16} color="#EF4444" />
+              <Text style={styles.place}>{activeRide.destination.title}</Text>
+            </View>
+            <Text style={styles.city}>Mohali, Punjab</Text>
             <Text style={styles.time}>9:49 AM · Estimated arrival</Text>
           </View>
           <View style={styles.sideActions}>
@@ -138,18 +144,18 @@ export const ActiveRideScreen: React.FC<Props> = ({ navigation }) => {
               <Text style={styles.started}>Started at 9:12 AM</Text>
             </View>
             <View style={styles.detailRoute}>
-              <View style={{ flex: 1 }}>
-                <Text style={styles.pinLabel}>Pickup</Text>
+              <Ionicons name="location-sharp" size={18} color="#10B981" />
+              <View style={{ flex: 1, marginLeft: 6 }}>
                 <Text style={styles.place}>{activeRide.pickup.title}</Text>
-                <Text style={styles.city}>Gurugram, Haryana</Text>
+                <Text style={styles.city}>Mohali, Punjab</Text>
               </View>
               <Text style={styles.timeRight}>9:12 AM{'\n'}Picked up</Text>
             </View>
             <View style={styles.detailRoute}>
-              <View style={{ flex: 1 }}>
-                <Text style={styles.pinLabel}>Destination</Text>
+              <Ionicons name="location-sharp" size={18} color="#EF4444" />
+              <View style={{ flex: 1, marginLeft: 6 }}>
                 <Text style={styles.place}>{activeRide.destination.title}</Text>
-                <Text style={styles.city}>Gurugram, Haryana</Text>
+                <Text style={styles.city}>Mohali, Punjab</Text>
               </View>
               <Text style={styles.timeRight}>9:49 AM{'\n'}Est. arrival</Text>
             </View>

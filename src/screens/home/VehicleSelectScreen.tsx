@@ -1,4 +1,4 @@
-import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type React from 'react';
 import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
@@ -51,17 +51,17 @@ export const VehicleSelectScreen: React.FC<Props> = ({ navigation }) => {
         <View style={styles.routeCard}>
           <View style={styles.routeTop}>
             <View style={styles.routeCol}>
-              <MaterialCommunityIcons name="map-marker" size={16} color={Colors.primary} />
+              <Ionicons name="location-sharp" size={16} color="#10B981" />
               <View>
                 <Text style={styles.place}>{pickup.title}</Text>
-                <Text style={styles.city}>Gurugram, Haryana</Text>
+                <Text style={styles.city}>Mohali, Punjab</Text>
               </View>
             </View>
             <View style={styles.routeCol}>
-              <MaterialCommunityIcons name="map-marker" size={16} color="#EF4444" />
+              <Ionicons name="location-sharp" size={16} color="#EF4444" />
               <View>
                 <Text style={styles.place}>{destination?.title}</Text>
-                <Text style={styles.city}>Gurugram, Haryana</Text>
+                <Text style={styles.city}>Mohali, Punjab</Text>
               </View>
             </View>
           </View>

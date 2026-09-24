@@ -14,7 +14,7 @@ export type MarkerData = {
   scale?: number;
 };
 
-const ICON_SIZE: Record<MapVehicleIcon, { width: number; height: number }> = {
+const ICON_SIZE: Partial<Record<MapVehicleIcon, { width: number; height: number }>> = {
   bike2D: { width: 44, height: 44 },
   auto2D: { width: 44, height: 44 },
   cab2D: { width: 44, height: 44 },
@@ -43,7 +43,7 @@ export const MapVehicleMarker: React.FC<MarkerData> = ({
   bearing = 0,
   scale = 1,
 }) => {
-  const size = ICON_SIZE[icon] || ICON_SIZE.cab2D;
+  const size = ICON_SIZE[icon] || { width: 44, height: 44 };
   const width = size.width * scale;
   const height = size.height * scale;
 

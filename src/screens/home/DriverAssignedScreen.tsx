@@ -113,15 +113,19 @@ export const DriverAssignedScreen: React.FC<Props> = ({ navigation }) => {
 
         <View style={styles.route}>
           <View style={styles.routeCol}>
-            <Text style={styles.pinLabel}>{hasArrived ? 'Pickup point' : 'Pickup location'}</Text>
-            <Text style={styles.place}>{activeRide.pickup.title}</Text>
-            <Text style={styles.city}>Gurugram, Haryana</Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+              <Ionicons name="location-sharp" size={16} color="#10B981" />
+              <Text style={styles.place}>{activeRide.pickup.title}</Text>
+            </View>
+            <Text style={styles.city}>Mohali, Punjab</Text>
           </View>
           {!hasArrived ? (
             <View style={styles.routeCol}>
-              <Text style={styles.pinLabel}>Destination</Text>
-              <Text style={styles.place}>{activeRide.destination.title}</Text>
-              <Text style={styles.city}>Gurugram, Haryana</Text>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                <Ionicons name="location-sharp" size={16} color="#EF4444" />
+                <Text style={styles.place}>{activeRide.destination.title}</Text>
+              </View>
+              <Text style={styles.city}>Mohali, Punjab</Text>
             </View>
           ) : null}
         </View>

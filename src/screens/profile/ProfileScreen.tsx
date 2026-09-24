@@ -1,9 +1,11 @@
 import { Ionicons } from '@expo/vector-icons';
 import type React from 'react';
+import { useState } from 'react';
 import { SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAppDialog } from '../../components/common/AppDialog';
 import { Avatar } from '../../components/common/Avatar';
+import { EmergencyContactsModal } from '../../components/common/EmergencyContactsModal';
 import { Colors } from '../../constants/colors';
 import { Layout } from '../../constants/layout';
 import { useAuthStore } from '../../store/authStore';
@@ -17,6 +19,7 @@ export const ProfileScreen: React.FC<any> = ({ navigation }) => {
   const resetDemoAuth = useAuthStore((state) => state.resetDemoAuth);
   const resetRide = useRideStore((state) => state.resetRide);
   const { showDialog } = useAppDialog();
+  const [showEmergencyModal, setShowEmergencyModal] = useState(false);
 
   const handleResetDemo = () => {
     showDialog({
@@ -114,12 +117,7 @@ export const ProfileScreen: React.FC<any> = ({ navigation }) => {
           <TouchableOpacity
             style={styles.menuRow}
             activeOpacity={0.7}
-            onPress={() =>
-              showDialog({
-                title: 'Saved Places',
-                message: 'Home: Sector 56\nWork: DLF Cyber City\nRecent: Ambience Mall',
-              })
-            }
+            onPress={() => navigation.navigate('SavedPlaces')}
           >
             <View style={styles.menuLeft}>
               <View style={[styles.menuIconBg, { backgroundColor: '#E0F2FE' }]}>
@@ -131,20 +129,6 @@ export const ProfileScreen: React.FC<any> = ({ navigation }) => {
           </TouchableOpacity>
 
           <View style={styles.rowDivider} />
-
-          {/* <TouchableOpacity
-            style={styles.menuRow}
-            activeOpacity={0.7}
-            onPress={() => navigation.navigate('Wallet')}
-          >
-            <View style={styles.menuLeft}>
-              <View style={[styles.menuIconBg, { backgroundColor: '#DCFCE7' }]}>
-                <Ionicons name="wallet-outline" size={18} color="#15803D" />
-              </View>
-              <Text style={styles.menuLabel}>Payment & Wallet</Text>
-            </View>
-            <Ionicons name="chevron-forward" size={18} color={Colors.gray400} />
-          </TouchableOpacity> */}
         </View>
 
         {/* Safety & Preferences */}
@@ -153,12 +137,7 @@ export const ProfileScreen: React.FC<any> = ({ navigation }) => {
           <TouchableOpacity
             style={styles.menuRow}
             activeOpacity={0.7}
-            onPress={() =>
-              showDialog({
-                title: 'Emergency Contacts',
-                message: 'Primary Contact: Mom (+91 98200 12345)',
-              })
-            }
+            onPress={() => setShowEmergencyModal(true)}
           >
             <View style={styles.menuLeft}>
               <View style={[styles.menuIconBg, { backgroundColor: '#FEE2E2' }]}>
@@ -231,6 +210,11 @@ export const ProfileScreen: React.FC<any> = ({ navigation }) => {
 
         <Text style={styles.versionText}>QuickRide Customer App • v1.0.0 (Build 2026)</Text>
       </ScrollView>
+
+      <EmergencyContactsModal
+        visible={showEmergencyModal}
+        onClose={() => setShowEmergencyModal(false)}
+      />
     </View>
   );
 };

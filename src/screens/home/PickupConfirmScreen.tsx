@@ -12,7 +12,7 @@ import {
 } from '../../components/ride/RideChrome';
 import { Colors } from '../../constants/colors';
 import { Layout } from '../../constants/layout';
-import { CURRENT_LOCATION, DLF_CYBER_CITY, GURUGRAM_HOME } from '../../data';
+import { CP67_MALL_DESTINATION, CURRENT_LOCATION, MOHALI_HOME } from '../../data';
 import type { RootStackParamList } from '../../navigation/types';
 import { useRideStore } from '../../store/rideStore';
 
@@ -43,9 +43,8 @@ export const PickupConfirmScreen: React.FC<Props> = ({ navigation }) => {
           activeOpacity={0.8}
           onPress={() => navigation.navigate('LocationSearch', { mode: 'pickup' })}
         >
-          <Ionicons name="location" size={20} color={Colors.primary} />
+          <Ionicons name="location-sharp" size={20} color="#10B981" />
           <View style={styles.pickupCopy}>
-            <Text style={styles.pickupLabel}>Pickup location</Text>
             <Text style={styles.pickupTitle}>{pickup.title}</Text>
             <Text style={styles.pickupSub}>{pickup.subtitle}</Text>
           </View>
@@ -64,23 +63,23 @@ export const PickupConfirmScreen: React.FC<Props> = ({ navigation }) => {
           <TouchableOpacity
             style={styles.shortcut}
             activeOpacity={0.85}
-            onPress={() => setPickup(GURUGRAM_HOME)}
+            onPress={() => setPickup(MOHALI_HOME)}
           >
             <Ionicons name="home-outline" size={18} color={Colors.gray700} />
             <View>
               <Text style={styles.shortcutName}>Home</Text>
-              <Text style={styles.shortcutSub}>Sector 56</Text>
+              <Text style={styles.shortcutSub}>Sector 70, Mohali</Text>
             </View>
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.shortcut}
             activeOpacity={0.85}
-            onPress={() => setPickup({ ...DLF_CYBER_CITY, type: 'work' })}
+            onPress={() => setPickup({ ...CP67_MALL_DESTINATION, type: 'work' })}
           >
             <Ionicons name="briefcase-outline" size={18} color={Colors.gray700} />
             <View>
               <Text style={styles.shortcutName}>Work</Text>
-              <Text style={styles.shortcutSub}>DLF Cyber City</Text>
+              <Text style={styles.shortcutSub}>CP 67 Mall</Text>
             </View>
           </TouchableOpacity>
         </View>

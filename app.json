@@ -4,8 +4,13 @@
     "slug": "QuickRide",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./assets/qr-app-icon.png",
     "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./assets/qr-app-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#FFFFFF"
+    },
     "plugins": [
       [
         "expo-location",
@@ -46,10 +51,8 @@
       },
       "permissions": ["ACCESS_COARSE_LOCATION", "ACCESS_FINE_LOCATION"],
       "adaptiveIcon": {
-        "backgroundColor": "#111111",
-        "foregroundImage": "./assets/android-icon-foreground.png",
-        "backgroundImage": "./assets/android-icon-background.png",
-        "monochromeImage": "./assets/android-icon-monochrome.png"
+        "backgroundColor": "#FFFFFF",
+        "foregroundImage": "./assets/qr-app-icon.png"
       },
       "predictiveBackGestureEnabled": false
     },

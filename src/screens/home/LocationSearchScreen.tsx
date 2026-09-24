@@ -14,13 +14,13 @@ import {
 import { Colors } from '../../constants/colors';
 import { Layout } from '../../constants/layout';
 import {
-  AMBIENCE_MALL,
+  CP67_MALL_DESTINATION,
   CURRENT_LOCATION,
-  DLF_CYBER_CITY,
-  GURUGRAM_HOME,
-  IGI_AIRPORT,
-  MG_ROAD_METRO,
+  MOHALI_AIRPORT,
+  MOHALI_HOME,
+  PHASE_3B2_MARKET,
   POPULAR_DESTINATIONS,
+  VR_PUNJAB_MALL,
 } from '../../data';
 import type { RootStackParamList } from '../../navigation/types';
 import { useRideStore } from '../../store/rideStore';
@@ -28,31 +28,31 @@ import type { LocationPoint } from '../../types';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'LocationSearch'>;
 
-const RECENT = [AMBIENCE_MALL, DLF_CYBER_CITY, MG_ROAD_METRO];
+const RECENT = [VR_PUNJAB_MALL, CP67_MALL_DESTINATION, PHASE_3B2_MARKET];
 const SUGGESTED = [
   {
-    loc: DLF_CYBER_CITY,
-    meta: '12 km · 25 min',
+    loc: CP67_MALL_DESTINATION,
+    meta: '4 km · 10 min',
     icon: 'business' as const,
-    bg: '#EEF3FF',
-    color: '#5B8DEF',
+    bg: '#F3E8FF',
+    color: '#9333EA',
   },
   {
-    loc: AMBIENCE_MALL,
+    loc: VR_PUNJAB_MALL,
     meta: '8 km · 18 min',
     icon: 'bag' as const,
-    bg: '#FFF3E8',
-    color: Colors.primary,
+    bg: '#DCFCE7',
+    color: '#10B981',
   },
   {
-    loc: IGI_AIRPORT,
-    meta: '14 km · 28 min',
+    loc: MOHALI_AIRPORT,
+    meta: '12 km · 22 min',
     icon: 'airplane' as const,
-    bg: '#EEF6FF',
-    color: '#3B82F6',
+    bg: '#FEF3C7',
+    color: '#D97706',
   },
 ];
-const SEARCHABLE = [GURUGRAM_HOME, ...POPULAR_DESTINATIONS];
+const SEARCHABLE = [MOHALI_HOME, ...POPULAR_DESTINATIONS];
 
 export const LocationSearchScreen: React.FC<Props> = ({ navigation, route }) => {
   const insets = useSafeAreaInsets();
@@ -158,30 +158,30 @@ export const LocationSearchScreen: React.FC<Props> = ({ navigation, route }) => 
                 </View>
               </TouchableOpacity>
             ) : null}
-            <TouchableOpacity style={styles.shortItem} onPress={() => select(GURUGRAM_HOME)}>
+            <TouchableOpacity style={styles.shortItem} onPress={() => select(MOHALI_HOME)}>
               <Ionicons name="home-outline" size={18} color={Colors.primary} />
               <View style={styles.shortCopy}>
                 <Text style={styles.shortTitle}>Home</Text>
                 <Text style={styles.shortSub} numberOfLines={1}>
-                  Sector 56
+                  Sector 70, Mohali
                 </Text>
               </View>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.shortItem} onPress={() => select(DLF_CYBER_CITY)}>
+            <TouchableOpacity style={styles.shortItem} onPress={() => select(CP67_MALL_DESTINATION)}>
               <Ionicons name="briefcase-outline" size={18} color={Colors.primary} />
               <View style={styles.shortCopy}>
                 <Text style={styles.shortTitle}>Work</Text>
                 <Text style={styles.shortSub} numberOfLines={1}>
-                  DLF Cyber City
+                  CP 67 Mall
                 </Text>
               </View>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.shortItem} onPress={() => select(AMBIENCE_MALL)}>
+            <TouchableOpacity style={styles.shortItem} onPress={() => select(VR_PUNJAB_MALL)}>
               <Ionicons name="star" size={18} color={Colors.primary} />
               <View style={styles.shortCopy}>
                 <Text style={styles.shortTitle}>Recent</Text>
                 <Text style={styles.shortSub} numberOfLines={1}>
-                  Ambience Mall
+                  VR Punjab Mall
                 </Text>
               </View>
             </TouchableOpacity>
@@ -206,7 +206,11 @@ export const LocationSearchScreen: React.FC<Props> = ({ navigation, route }) => 
                     style={styles.listRow}
                     onPress={() => select(item)}
                   >
-                    <Ionicons name="location-outline" size={18} color={Colors.gray400} />
+                    <Ionicons
+                      name="location-sharp"
+                      size={18}
+                      color={isPickupSelection ? '#10B981' : '#EF4444'}
+                    />
                     <View style={styles.listCopy}>
                       <Text style={styles.listTitle}>{item.title}</Text>
                       <Text style={styles.listSub}>{item.subtitle}</Text>

@@ -17,6 +17,7 @@ import { VehicleSelectScreen } from '../screens/home/VehicleSelectScreen';
 import { PrivacyPolicyScreen } from '../screens/legal/PrivacyPolicyScreen';
 import { TermsOfServiceScreen } from '../screens/legal/TermsOfServiceScreen';
 import { EditProfileScreen } from '../screens/profile/EditProfileScreen';
+import { SavedPlacesScreen } from '../screens/profile/SavedPlacesScreen';
 import { WalletScreen } from '../screens/wallet/WalletScreen';
 import { useAuthStore } from '../store/authStore';
 import { AuthNavigator } from './AuthNavigator';
@@ -51,6 +52,7 @@ export const AppNavigator: React.FC = () => {
             <RootStack.Screen name="MainTabs" component={MainTabNavigator} />
             <RootStack.Screen name="DriverChat" component={DriverChatScreen} />
             <RootStack.Screen name="EditProfile" component={EditProfileScreen} />
+            <RootStack.Screen name="SavedPlaces" component={SavedPlacesScreen} />
             <RootStack.Screen name="Wallet" component={WalletScreen} />
             <RootStack.Screen name="TermsOfService" component={TermsOfServiceScreen} />
             <RootStack.Screen name="PrivacyPolicy" component={PrivacyPolicyScreen} />

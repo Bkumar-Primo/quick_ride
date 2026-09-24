@@ -88,15 +88,6 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
             <QuickRideLogo size="xs" />
           </View>
         </View>
-
-        <View style={[styles.mapControls, { top: insets.top + 86 }]}>
-          <TouchableOpacity activeOpacity={0.85} style={styles.mapControlBtn}>
-            <Ionicons name="navigate" size={18} color={Colors.gray700} />
-          </TouchableOpacity>
-          <TouchableOpacity activeOpacity={0.85} style={styles.mapControlBtn}>
-            <Ionicons name="locate-outline" size={20} color={Colors.gray700} />
-          </TouchableOpacity>
-        </View>
       </View>
 
       {/* Single Bottom Sheet driven by @gorhom/bottom-sheet */}

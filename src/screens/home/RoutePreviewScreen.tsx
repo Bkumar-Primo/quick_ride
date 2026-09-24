@@ -38,22 +38,20 @@ export const RoutePreviewScreen: React.FC<Props> = ({ navigation }) => {
 
         <View style={styles.routeRow}>
           <View style={styles.routeCol}>
-            <Text style={styles.pinLabel}>Pickup</Text>
             <View style={styles.pinLine}>
-              <Ionicons name="location" size={18} color={Colors.primary} />
+              <Ionicons name="location-sharp" size={18} color="#10B981" />
               <View>
                 <Text style={styles.place}>{pickup.title}</Text>
-                <Text style={styles.city}>Gurugram, Haryana</Text>
+                <Text style={styles.city}>Mohali, Punjab</Text>
               </View>
             </View>
           </View>
           <View style={styles.routeCol}>
-            <Text style={styles.pinLabel}>Destination</Text>
             <View style={styles.pinLine}>
-              <Ionicons name="location" size={18} color="#EF4444" />
+              <Ionicons name="location-sharp" size={18} color="#EF4444" />
               <View>
                 <Text style={styles.place}>{destination?.title}</Text>
-                <Text style={styles.city}>Gurugram, Haryana</Text>
+                <Text style={styles.city}>Mohali, Punjab</Text>
               </View>
             </View>
           </View>

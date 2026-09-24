@@ -5,11 +5,13 @@ import type React from 'react';
 import { useEffect, useRef, useState } from 'react';
 import {
   Image,
+  type NativeSyntheticEvent,
   Platform,
   ScrollView,
   StyleSheet,
   Text,
   TextInput,
+  type TextInputKeyPressEventData,
   TouchableOpacity,
   View,
 } from 'react-native';
@@ -31,18 +33,20 @@ const loginHero = require('../../assets/images/loginimage1.png');
 export const OtpVerificationScreen: React.FC<Props> = ({ route, navigation }) => {
   const insets = useSafeAreaInsets();
   const phone = route.params?.phone || '+91 78945 61230';
-  const [otp, setOtp] = useState('');
+  const [otpDigits, setOtpDigits] = useState<string[]>(['', '', '', '', '', '']);
   const [timer, setTimer] = useState(18);
   const [loading, setLoading] = useState(false);
-  const [focused, setFocused] = useState(true);
+  const [focusedIndex, setFocusedIndex] = useState<number | null>(0);
   const [error, setError] = useState('');
-  const inputRef = useRef<TextInput>(null);
+  const inputRefs = useRef<(TextInput | null)[]>([]);
   const verifyOtp = useAuthStore((state) => state.verifyOtp);
   const requestOtp = useAuthStore((state) => state.requestOtp);
   const { showDialog } = useAppDialog();
 
+  const otp = otpDigits.join('');
+
   useEffect(() => {
-    const timeout = setTimeout(() => inputRef.current?.focus(), 400);
+    const timeout = setTimeout(() => inputRefs.current[0]?.focus(), 400);
     return () => clearTimeout(timeout);
   }, []);
 
@@ -54,9 +58,40 @@ export const OtpVerificationScreen: React.FC<Props> = ({ route, navigation }) =>
     return () => clearInterval(interval);
   }, [timer]);
 
-  const handleOtpChange = (text: string) => {
+  const handleDigitChange = (text: string, index: number) => {
     setError('');
-    setOtp(digitsOnly(text).slice(0, 6));
+    const cleaned = digitsOnly(text);
+
+    if (cleaned.length > 1) {
+      const nextDigits = [...otpDigits];
+      const digits = cleaned.split('').slice(0, 6);
+      for (let i = 0; i < 6; i++) {
+        nextDigits[i] = digits[i] || '';
+      }
+      setOtpDigits(nextDigits);
+      const targetIndex = Math.min(digits.length, 5);
+      inputRefs.current[targetIndex]?.focus();
+      return;
+    }
+
+    const nextDigits = [...otpDigits];
+    nextDigits[index] = cleaned;
+    setOtpDigits(nextDigits);
+
+    if (cleaned && index < 5) {
+      inputRefs.current[index + 1]?.focus();
+    }
+  };
+
+  const handleKeyPress = (e: NativeSyntheticEvent<TextInputKeyPressEventData>, index: number) => {
+    if (e.nativeEvent.key === 'Backspace') {
+      if (!otpDigits[index] && index > 0) {
+        const nextDigits = [...otpDigits];
+        nextDigits[index - 1] = '';
+        setOtpDigits(nextDigits);
+        inputRefs.current[index - 1]?.focus();
+      }
+    }
   };
 
   const handleVerify = async () => {
@@ -76,7 +111,7 @@ export const OtpVerificationScreen: React.FC<Props> = ({ route, navigation }) =>
 
   const handleResend = async () => {
     setError('');
-    setOtp('');
+    setOtpDigits(['', '', '', '', '', '']);
     const result = await requestOtp(phone);
     if (!result.ok) {
       showDialog({
@@ -87,7 +122,7 @@ export const OtpVerificationScreen: React.FC<Props> = ({ route, navigation }) =>
       return;
     }
     setTimer(28);
-    inputRef.current?.focus();
+    inputRefs.current[0]?.focus();
   };
 
   const formattedTimer = `00:${timer < 10 ? `0${timer}` : timer}`;
@@ -136,41 +171,33 @@ export const OtpVerificationScreen: React.FC<Props> = ({ route, navigation }) =>
           bounces={false}
         >
           <View style={styles.otpWrap}>
-            <View pointerEvents="none" style={styles.otpRow}>
+            <View style={styles.otpRow}>
               {Array.from({ length: 6 }).map((_, index) => {
-                const digit = otp[index] ?? '';
-                const isActive = focused && index === otp.length;
+                const digit = otpDigits[index] ?? '';
+                const isFocused = focusedIndex === index;
+                console.log('index: ', index)
                 return (
-                  <View
+                  <TextInput
                     key={index}
+                    ref={(el) => {
+                      inputRefs.current[index] = el;
+                    }}
                     style={[
-                      styles.otpBox,
+                      styles.otpBoxInput,
                       digit.length > 0 && styles.otpBoxFilled,
-                      isActive && styles.otpBoxActive,
+                      isFocused && styles.otpBoxActive,
                     ]}
-                  >
-                    {digit ? (
-                      <Text style={styles.otpDigit}>{digit}</Text>
-                    ) : isActive ? (
-                      <View style={styles.caret} />
-                    ) : null}
-                  </View>
+                    value={digit}
+                    onChangeText={(text) => handleDigitChange(text, index)}
+                    onKeyPress={(e) => handleKeyPress(e, index)}
+                    onFocus={() => setFocusedIndex(index)}
+                    onBlur={() => setFocusedIndex(null)}
+                    keyboardType="number-pad"
+                    maxLength={index === 0 ? 6 : 1}
+                  />
                 );
               })}
             </View>
-
-            <TextInput
-              ref={inputRef}
-              style={styles.hiddenInput}
-              keyboardType="number-pad"
-              maxLength={6}
-              value={otp}
-              onChangeText={handleOtpChange}
-              onFocus={() => setFocused(true)}
-              onBlur={() => setFocused(false)}
-              autoFocus
-              caretHidden
-            />
           </View>
 
           {error ? <Text style={styles.errorText}>{error}</Text> : null}
@@ -276,9 +303,9 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 20,
     elevation: 16,
+    zIndex: 9999
   },
   otpWrap: {
-    position: 'relative',
     marginBottom: Layout.spacing.md,
   },
   otpRow: {
@@ -286,15 +313,18 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     gap: 6,
   },
-  otpBox: {
+  otpBoxInput: {
     flex: 1,
     height: 56,
     borderRadius: 14,
     borderWidth: 1.5,
     borderColor: '#E2E8F0',
     backgroundColor: '#F8FAFC',
-    alignItems: 'center',
-    justifyContent: 'center',
+    fontSize: 22,
+    fontWeight: '800',
+    color: '#0F172A',
+    textAlign: 'center',
+    padding: 0,
   },
   otpBoxFilled: {
     borderColor: '#FF5B00',
@@ -304,29 +334,6 @@ const styles = StyleSheet.create({
     borderColor: '#FF5B00',
     borderWidth: 2,
     backgroundColor: '#FFFFFF',
-  },
-  otpDigit: {
-    fontSize: 22,
-    fontWeight: '800',
-    color: '#0F172A',
-  },
-  caret: {
-    width: 2,
-    height: 22,
-    backgroundColor: '#FF5B00',
-    borderRadius: 1,
-  },
-  hiddenInput: {
-    position: 'absolute',
-    top: 0,
-    right: 0,
-    bottom: 0,
-    left: 0,
-    color: 'transparent',
-    backgroundColor: 'transparent',
-    // width: 1,
-    // height: 1,
-    opacity: 0,
   },
   errorText: {
     color: Colors.danger,

@@ -3,6 +3,7 @@ import BottomSheet, { BottomSheetScrollView, BottomSheetView } from '@gorhom/bot
 import type React from 'react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {
+  Alert,
   Dimensions,
   Image,
   ScrollView,
@@ -17,6 +18,7 @@ import { Colors } from '../../constants/colors';
 import { Layout } from '../../constants/layout';
 import {
   AMBIENCE_MALL,
+  CP67_MALL_DESTINATION,
   CURRENT_LOCATION,
   DEMO_ROUTE,
   DLF_CYBER_CITY,
@@ -89,6 +91,7 @@ export const SingleRideFlowSheet: React.FC<Props> = ({
   const resetRide = useRideStore((state) => state.resetRide);
 
   const selectedPaymentMethod = useUserStore((state) => state.selectedPaymentMethod);
+  const addSavedPlace = useUserStore((state) => state.addSavedPlace);
 
   const [searchQuery, setSearchQuery] = useState('');
   const [searchMode, setSearchMode] = useState<'destination' | 'pickup'>('destination');
@@ -118,7 +121,7 @@ export const SingleRideFlowSheet: React.FC<Props> = ({
       case 'RIDE_IN_PROGRESS':
         return '54%';
       case 'RIDE_COMPLETED':
-        return '54%';
+        return '66%';
       default:
         return '52%';
     }
@@ -164,11 +167,11 @@ export const SingleRideFlowSheet: React.FC<Props> = ({
   const needle = searchQuery.trim().toLowerCase();
   const filteredSearch = needle
     ? SEARCHABLE.filter(
-        (item) =>
-          item.title.toLowerCase().includes(needle) ||
-          item.subtitle.toLowerCase().includes(needle) ||
-          item.address.toLowerCase().includes(needle),
-      )
+      (item) =>
+        item.title.toLowerCase().includes(needle) ||
+        item.subtitle.toLowerCase().includes(needle) ||
+        item.address.toLowerCase().includes(needle),
+    )
     : SEARCHABLE;
 
   const vehicleIconName: keyof typeof Ionicons.glyphMap =
@@ -186,7 +189,7 @@ export const SingleRideFlowSheet: React.FC<Props> = ({
     <BottomSheetView style={[styles.sheetBody, { paddingBottom: bottomPad }]}>
       <View style={styles.pickupRow}>
         <View style={styles.pickupPinCol}>
-          <Ionicons name="location" size={20} color={Colors.primary} />
+          <Ionicons name="location-sharp" size={20} color="#10B981" />
           <View style={styles.pickupDots}>
             <View style={styles.pickupDot} />
             <View style={styles.pickupDot} />
@@ -201,7 +204,6 @@ export const SingleRideFlowSheet: React.FC<Props> = ({
             setFlowStep('LOCATION_SEARCH');
           }}
         >
-          <Text style={styles.pickupLabel}>Pickup location</Text>
           <Text style={styles.pickupTitle}>{pickup.title}</Text>
           <Text style={styles.pickupSubtitle} numberOfLines={1}>
             {pickup.subtitle}
@@ -240,7 +242,7 @@ export const SingleRideFlowSheet: React.FC<Props> = ({
           <View>
             <Text style={styles.shortcutLabel}>Home</Text>
             <Text style={styles.shortcutSubtitle} numberOfLines={1}>
-              Sector 56
+              Sector 70, Mohali
             </Text>
           </View>
         </TouchableOpacity>
@@ -254,7 +256,7 @@ export const SingleRideFlowSheet: React.FC<Props> = ({
           <View>
             <Text style={styles.shortcutLabel}>Work</Text>
             <Text style={styles.shortcutSubtitle} numberOfLines={1}>
-              Cyber City
+              CP 67 Mall
             </Text>
           </View>
         </TouchableOpacity>
@@ -449,10 +451,10 @@ export const SingleRideFlowSheet: React.FC<Props> = ({
         }}
       >
         <View style={styles.routeCol}>
-          <MaterialCommunityIcons name="map-marker" size={20} color={Colors.primary} />
+          <Ionicons name="location-sharp" size={20} color="#10B981" />
           <View style={{ flex: 1 }}>
             <Text style={styles.place}>{pickup.title}</Text>
-            <Text style={styles.city}>{pickup.address || 'Gurugram, Haryana'}</Text>
+            <Text style={styles.city}>{pickup.address || 'Mohali, Punjab'}</Text>
           </View>
           <Ionicons name="search" size={18} color={Colors.primary} />
         </View>
@@ -479,7 +481,7 @@ export const SingleRideFlowSheet: React.FC<Props> = ({
           <Ionicons name="home-outline" size={18} color={Colors.primary} />
           <View style={{ flexShrink: 1 }}>
             <Text style={styles.shortcutLabel}>Home</Text>
-            <Text style={styles.shortcutSubtitle}>Sector 56</Text>
+            <Text style={styles.shortcutSubtitle}>Sector 70, Mohali</Text>
           </View>
         </TouchableOpacity>
       </View>
@@ -508,17 +510,17 @@ export const SingleRideFlowSheet: React.FC<Props> = ({
       <View style={styles.routeCard}>
         <View style={styles.routeTop}>
           <View style={styles.routeCol}>
-            <MaterialCommunityIcons name="map-marker" size={16} color={Colors.primary} />
+            <Ionicons name="location-sharp" size={16} color="#10B981" />
             <View>
               <Text style={styles.place}>{pickup.title}</Text>
-              <Text style={styles.city}>Gurugram, Haryana</Text>
+              <Text style={styles.city}>Mohali, Punjab</Text>
             </View>
           </View>
           <View style={styles.routeCol}>
-            <MaterialCommunityIcons name="map-marker" size={16} color="#EF4444" />
+            <Ionicons name="location-sharp" size={16} color="#EF4444" />
             <View>
               <Text style={styles.place}>{destination?.title}</Text>
-              <Text style={styles.city}>Gurugram, Haryana</Text>
+              <Text style={styles.city}>Mohali, Punjab</Text>
             </View>
           </View>
         </View>
@@ -624,11 +626,10 @@ export const SingleRideFlowSheet: React.FC<Props> = ({
           setFlowStep('LOCATION_SEARCH');
         }}
       >
-        <Ionicons name="location" size={18} color={Colors.primary} />
+        <Ionicons name="location-sharp" size={18} color="#10B981" />
         <View style={styles.blockCopy}>
-          <Text style={styles.blockLabel}>Pickup</Text>
           <Text style={styles.blockTitle}>{pickup.title}</Text>
-          <Text style={styles.blockSub}>Gurugram, Haryana</Text>
+          <Text style={styles.blockSub}>Mohali, Punjab</Text>
         </View>
         <Ionicons name="chevron-forward" size={16} color={Colors.gray300} />
       </TouchableOpacity>
@@ -640,11 +641,10 @@ export const SingleRideFlowSheet: React.FC<Props> = ({
           setFlowStep('LOCATION_SEARCH');
         }}
       >
-        <Ionicons name="location" size={18} color="#EF4444" />
+        <Ionicons name="location-sharp" size={18} color="#EF4444" />
         <View style={styles.blockCopy}>
-          <Text style={styles.blockLabel}>Destination</Text>
           <Text style={styles.blockTitle}>{destination?.title}</Text>
-          <Text style={styles.blockSub}>Gurugram, Haryana</Text>
+          <Text style={styles.blockSub}>Mohali, Punjab</Text>
         </View>
         <Ionicons name="chevron-forward" size={16} color={Colors.gray300} />
       </TouchableOpacity>
@@ -733,14 +733,18 @@ export const SingleRideFlowSheet: React.FC<Props> = ({
 
       <View style={styles.routeCard}>
         <View style={styles.routeCol}>
-          <Text style={styles.pinLabel}>Pickup location</Text>
-          <Text style={styles.place}>{pickup.title}</Text>
-          <Text style={styles.city}>Gurugram, Haryana</Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+            <Ionicons name="location-sharp" size={16} color="#10B981" />
+            <Text style={styles.place}>{pickup.title}</Text>
+          </View>
+          <Text style={styles.city}>Mohali, Punjab</Text>
         </View>
         <View style={styles.routeCol}>
-          <Text style={styles.pinLabel}>Destination</Text>
-          <Text style={styles.place}>{destination?.title}</Text>
-          <Text style={styles.city}>Gurugram, Haryana</Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+            <Ionicons name="location-sharp" size={16} color="#EF4444" />
+            <Text style={styles.place}>{destination?.title}</Text>
+          </View>
+          <Text style={styles.city}>Mohali, Punjab</Text>
         </View>
       </View>
 
@@ -819,19 +823,25 @@ export const SingleRideFlowSheet: React.FC<Props> = ({
 
         <View style={styles.routeCard}>
           <View style={styles.routeCol}>
-            <Text style={styles.pinLabel}>
-              {isInProgress ? 'Destination' : isArrived ? 'Pickup point' : 'Pickup location'}
-            </Text>
-            <Text style={styles.place}>
-              {isInProgress ? activeRide.destination.title : activeRide.pickup.title}
-            </Text>
-            <Text style={styles.city}>Gurugram, Haryana</Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+              <Ionicons
+                name="location-sharp"
+                size={16}
+                color={isInProgress ? '#EF4444' : '#10B981'}
+              />
+              <Text style={styles.place}>
+                {isInProgress ? activeRide.destination.title : activeRide.pickup.title}
+              </Text>
+            </View>
+            <Text style={styles.city}>Mohali, Punjab</Text>
           </View>
           {!isArrived && !isInProgress ? (
             <View style={styles.routeCol}>
-              <Text style={styles.pinLabel}>Destination</Text>
-              <Text style={styles.place}>{activeRide.destination.title}</Text>
-              <Text style={styles.city}>Gurugram, Haryana</Text>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                <Ionicons name="location-sharp" size={16} color="#EF4444" />
+                <Text style={styles.place}>{activeRide.destination.title}</Text>
+              </View>
+              <Text style={styles.city}>Mohali, Punjab</Text>
             </View>
           ) : null}
         </View>
@@ -847,34 +857,51 @@ export const SingleRideFlowSheet: React.FC<Props> = ({
     );
   };
 
-  const renderCompletedContent = () => (
-    <BottomSheetView style={[styles.sheetBody, { alignItems: 'center', paddingBottom: bottomPad }]}>
-      <View style={styles.successIconCircle}>
-        <Ionicons name="checkmark" size={36} color={Colors.white} />
-      </View>
-      <Text style={styles.completedTitle}>You have arrived!</Text>
-      <Text style={styles.completedSub}>Hope you had a comfortable ride</Text>
+  const renderCompletedContent = () => {
+    const handleSaveAddress = () => {
+      const locToSave = destination || activeRide?.destination || CP67_MALL_DESTINATION;
+      addSavedPlace(locToSave);
+      Alert.alert(
+        'Address Saved!',
+        `"${locToSave.title}" has been saved to your Saved Places.`,
+      );
+    };
 
-      <View style={styles.completedFareCard}>
-        <Text style={styles.completedFareLabel}>Total Fare Paid</Text>
-        <Text style={styles.completedFareVal}>
-          ₹{activeRide?.fareBreakdown.totalFare || selectedVehicle.price}
-        </Text>
-        <Text style={styles.completedPayMethod}>
-          Paid via {activeRide?.paymentMethod || selectedPaymentMethod}
-        </Text>
-      </View>
+    return (
+      <BottomSheetView style={[styles.sheetBody, { alignItems: 'center', paddingBottom: bottomPad }]}>
+        <View style={styles.successIconCircle}>
+          <Ionicons name="checkmark" size={36} color={Colors.white} />
+        </View>
+        <Text style={styles.completedTitle}>You have arrived!</Text>
+        <Text style={styles.completedSub}>Hope you had a comfortable ride</Text>
 
-      <Button
-        title="Rate & Review Driver"
-        onPress={onOpenRating}
-        style={{ width: '100%', marginTop: 14 }}
-      />
-      <TouchableOpacity onPress={resetRide} style={styles.cancelLinkBtn}>
-        <Text style={styles.cancelLinkText}>Done / Back to Home</Text>
-      </TouchableOpacity>
-    </BottomSheetView>
-  );
+        <View style={styles.completedFareCard}>
+          <Text style={styles.completedFareLabel}>Total Fare Paid</Text>
+          <Text style={styles.completedFareVal}>
+            ₹{activeRide?.fareBreakdown.totalFare || selectedVehicle.price}
+          </Text>
+          <Text style={styles.completedPayMethod}>
+            Paid via {activeRide?.paymentMethod || selectedPaymentMethod}
+          </Text>
+        </View>
+
+        <SoftPillButton
+          title="Save Address to Saved Places"
+          onPress={handleSaveAddress}
+          style={{ width: '100%', marginTop: 12 }}
+        />
+
+        <Button
+          title="Rate & Review Driver"
+          onPress={onOpenRating}
+          style={{ width: '100%', marginTop: 10 }}
+        />
+        <TouchableOpacity onPress={resetRide} style={styles.cancelLinkBtn}>
+          <Text style={styles.cancelLinkText}>Done / Back to Home</Text>
+        </TouchableOpacity>
+      </BottomSheetView>
+    );
+  };
 
   const renderSheetBody = () => {
     switch (flowStep) {

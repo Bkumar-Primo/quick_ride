@@ -52,11 +52,10 @@ export const BookingConfirmScreen: React.FC<Props> = ({ navigation }) => {
           style={styles.block}
           onPress={() => navigation.navigate('LocationSearch', { mode: 'pickup' })}
         >
-          <Ionicons name="location" size={18} color={Colors.primary} />
+          <Ionicons name="location-sharp" size={18} color="#10B981" />
           <View style={styles.blockCopy}>
-            <Text style={styles.blockLabel}>Pickup</Text>
             <Text style={styles.blockTitle}>{pickup.title}</Text>
-            <Text style={styles.blockSub}>Gurugram, Haryana</Text>
+            <Text style={styles.blockSub}>Mohali, Punjab</Text>
           </View>
           <Ionicons name="chevron-forward" size={16} color={Colors.gray300} />
         </TouchableOpacity>
@@ -64,11 +63,10 @@ export const BookingConfirmScreen: React.FC<Props> = ({ navigation }) => {
           style={styles.block}
           onPress={() => navigation.navigate('LocationSearch')}
         >
-          <Ionicons name="location" size={18} color="#EF4444" />
+          <Ionicons name="location-sharp" size={18} color="#EF4444" />
           <View style={styles.blockCopy}>
-            <Text style={styles.blockLabel}>Destination</Text>
             <Text style={styles.blockTitle}>{destination?.title}</Text>
-            <Text style={styles.blockSub}>Gurugram, Haryana</Text>
+            <Text style={styles.blockSub}>Mohali, Punjab</Text>
           </View>
           <Ionicons name="chevron-forward" size={16} color={Colors.gray300} />
         </TouchableOpacity>

@@ -13,8 +13,10 @@ import {
   SoftPillButton,
 } from '../../components/ride/RideChrome';
 import { Colors } from '../../constants/colors';
+import { CP67_MALL_DESTINATION } from '../../data/mockLocations';
 import type { RootStackParamList } from '../../navigation/types';
 import { useRideStore } from '../../store/rideStore';
+import { useUserStore } from '../../store/userStore';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'RideCompleted'>;
 
@@ -22,6 +24,7 @@ export const RideCompletedScreen: React.FC<Props> = ({ navigation }) => {
   const insets = useSafeAreaInsets();
   const activeRide = useRideStore((state) => state.activeRide);
   const resetRide = useRideStore((state) => state.resetRide);
+  const addSavedPlace = useUserStore((state) => state.addSavedPlace);
   const { showDialog } = useAppDialog();
   const driver = activeRide?.driver;
   const fare = activeRide?.fareBreakdown;
@@ -29,6 +32,20 @@ export const RideCompletedScreen: React.FC<Props> = ({ navigation }) => {
   const done = () => {
     resetRide();
     navigation.navigate('MainTabs', { screen: 'HomeTab' });
+  };
+
+  const handleSaveAddress = () => {
+    const loc = activeRide?.destination || CP67_MALL_DESTINATION;
+    addSavedPlace(loc);
+    showDialog({
+      title: 'Address Saved',
+      message: `"${loc.title}" added to your Saved Places.`,
+      tone: 'success',
+      actions: [
+        { label: 'View Saved Places', onPress: () => navigation.navigate('SavedPlaces') },
+        { label: 'OK' },
+      ],
+    });
   };
 
   return (
@@ -61,18 +78,23 @@ export const RideCompletedScreen: React.FC<Props> = ({ navigation }) => {
         </View>
 
         <View style={styles.route}>
-          <View style={{ flex: 1 }}>
-            <Text style={styles.pinLabel}>Pickup</Text>
-            <Text style={styles.place}>{activeRide?.pickup.title}</Text>
-            <Text style={styles.city}>Gurugram, Haryana</Text>
+          <View style={styles.pinIconCol}>
+            <Ionicons name="location-sharp" size={18} color="#10B981" />
+          </View>
+          <View style={{ flex: 1, marginLeft: 8 }}>
+            <Text style={styles.place}>{activeRide?.pickup.title ?? 'SM Heights'}</Text>
+            <Text style={styles.city}>Mohali, Punjab</Text>
           </View>
           <Text style={styles.time}>9:12 AM</Text>
         </View>
+
         <View style={styles.route}>
-          <View style={{ flex: 1 }}>
-            <Text style={styles.pinLabel}>Destination</Text>
-            <Text style={styles.place}>{activeRide?.destination.title}</Text>
-            <Text style={styles.city}>Gurugram, Haryana</Text>
+          <View style={styles.pinIconCol}>
+            <Ionicons name="location-sharp" size={18} color="#EF4444" />
+          </View>
+          <View style={{ flex: 1, marginLeft: 8 }}>
+            <Text style={styles.place}>{activeRide?.destination.title ?? 'CP 67 Mall'}</Text>
+            <Text style={styles.city}>Mohali, Punjab</Text>
           </View>
           <Text style={styles.time}>9:49 AM</Text>
         </View>
@@ -100,6 +122,12 @@ export const RideCompletedScreen: React.FC<Props> = ({ navigation }) => {
             onMessage={() => navigation.navigate('DriverChat')}
           />
         ) : null}
+
+        <SoftPillButton
+          title="Save Destination Address"
+          onPress={handleSaveAddress}
+          style={{ marginTop: 12, marginBottom: 8 }}
+        />
 
         <Text style={styles.fareTitle}>Fare details</Text>
         <View style={styles.fareRow}>
@@ -163,7 +191,8 @@ const styles = StyleSheet.create({
   fareBox: { alignItems: 'flex-end' },
   fareVal: { fontSize: 22, fontWeight: '800', color: Colors.primary },
   fareLabel: { fontSize: 11, color: Colors.gray500 },
-  route: { flexDirection: 'row', marginBottom: 8 },
+  route: { flexDirection: 'row', marginBottom: 8, alignItems: 'center' },
+  pinIconCol: { paddingTop: 2 },
   pinLabel: { fontSize: 11, color: Colors.gray500 },
   place: { fontSize: 14, fontWeight: '800', color: Colors.textPrimary },
   city: { fontSize: 12, color: Colors.gray500 },

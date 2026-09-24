@@ -359,29 +359,16 @@ export const BookingMap: React.FC<BookingMapProps> = ({ mode }) => {
           mode === 'arriving' ||
           mode === 'arrived' ||
           mode === 'inprogress') && (
-          <Marker
-            coordinate={driverPos}
-            anchor={{ x: 0.5, y: 0.5 }}
-            flat={true}
-            rotation={driverBearing}
-          >
-            <MapVehicleMarker icon={selectedIcon} bearing={driverBearing} scale={1.5} />
-          </Marker>
-        )}
+            <Marker
+              coordinate={driverPos}
+              anchor={{ x: 0.5, y: 0.5 }}
+              flat={true}
+              rotation={driverBearing}
+            >
+              <MapVehicleMarker icon={selectedIcon} bearing={driverBearing} scale={1.5} />
+            </Marker>
+          )}
       </MapView>
-      <View style={styles.controlsOverlay} pointerEvents="box-none">
-        <TouchableOpacity
-          activeOpacity={0.85}
-          style={[styles.recenterBtn, isFollowingDriver && styles.recenterBtnActive]}
-          onPress={handleRecenter}
-        >
-          <Ionicons
-            name={isFollowingDriver ? 'navigate' : 'navigate-outline'}
-            size={20}
-            color={isFollowingDriver ? Colors.primary : Colors.gray700}
-          />
-        </TouchableOpacity>
-      </View>
     </View>
   );
 };
@@ -393,7 +380,8 @@ const styles = StyleSheet.create({
   },
   map: {
     ...StyleSheet.absoluteFill,
-    height: '66%',
+    height: '65%',
+    width: '100%'
   },
   controlsOverlay: {
     position: 'absolute',

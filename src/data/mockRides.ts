@@ -1,11 +1,11 @@
 import type { ActiveRide } from '../types';
 import { getDriverById } from './mockDrivers';
 import {
-  AMBIENCE_MALL,
+  CP67_MALL_DESTINATION,
   CURRENT_LOCATION,
-  DLF_CYBER_CITY,
-  GURUGRAM_HOME,
-  IGI_AIRPORT,
+  MOHALI_AIRPORT,
+  MOHALI_HOME,
+  VR_PUNJAB_MALL,
 } from './mockLocations';
 import { getVehicleById } from './mockVehicles';
 
@@ -13,7 +13,7 @@ export const MOCK_RIDE_HISTORY: ActiveRide[] = [
   {
     id: 'ride-hist-101',
     pickup: CURRENT_LOCATION,
-    destination: DLF_CYBER_CITY,
+    destination: CP67_MALL_DESTINATION,
     vehicle: getVehicleById('veh-comfort'),
     driver: getDriverById('drv-01'),
     otpPin: '4821',
@@ -35,8 +35,8 @@ export const MOCK_RIDE_HISTORY: ActiveRide[] = [
   },
   {
     id: 'ride-hist-102',
-    pickup: IGI_AIRPORT,
-    destination: GURUGRAM_HOME,
+    pickup: MOHALI_AIRPORT,
+    destination: MOHALI_HOME,
     vehicle: getVehicleById('veh-quick'),
     driver: getDriverById('drv-02'),
     otpPin: '1904',
@@ -57,7 +57,7 @@ export const MOCK_RIDE_HISTORY: ActiveRide[] = [
   },
   {
     id: 'ride-hist-103',
-    pickup: AMBIENCE_MALL,
+    pickup: VR_PUNJAB_MALL,
     destination: CURRENT_LOCATION,
     vehicle: getVehicleById('veh-bike'),
     driver: getDriverById('drv-bike'),
@@ -80,7 +80,7 @@ export const MOCK_RIDE_HISTORY: ActiveRide[] = [
   {
     id: 'ride-hist-104',
     pickup: CURRENT_LOCATION,
-    destination: DLF_CYBER_CITY,
+    destination: CP67_MALL_DESTINATION,
     vehicle: getVehicleById('veh-xl'),
     driver: getDriverById('drv-01'),
     otpPin: '8201',
