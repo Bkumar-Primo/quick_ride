@@ -359,15 +359,15 @@ export const BookingMap: React.FC<BookingMapProps> = ({ mode }) => {
           mode === 'arriving' ||
           mode === 'arrived' ||
           mode === 'inprogress') && (
-            <Marker
-              coordinate={driverPos}
-              anchor={{ x: 0.5, y: 0.5 }}
-              flat={true}
-              rotation={driverBearing}
-            >
-              <MapVehicleMarker icon={selectedIcon} bearing={driverBearing} scale={1.5} />
-            </Marker>
-          )}
+          <Marker
+            coordinate={driverPos}
+            anchor={{ x: 0.5, y: 0.5 }}
+            flat={true}
+            rotation={driverBearing}
+          >
+            <MapVehicleMarker icon={selectedIcon} bearing={driverBearing} scale={1.5} />
+          </Marker>
+        )}
       </MapView>
     </View>
   );
@@ -381,7 +381,7 @@ const styles = StyleSheet.create({
   map: {
     ...StyleSheet.absoluteFill,
     height: '65%',
-    width: '100%'
+    width: '100%',
   },
   controlsOverlay: {
     position: 'absolute',

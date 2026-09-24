@@ -355,7 +355,11 @@ export const SavedPlacesScreen: React.FC<Props> = ({ navigation }) => {
               placeholderTextColor={Colors.gray400}
             />
 
-            <TouchableOpacity style={styles.saveBtn} activeOpacity={0.85} onPress={handleAddNewPlace}>
+            <TouchableOpacity
+              style={styles.saveBtn}
+              activeOpacity={0.85}
+              onPress={handleAddNewPlace}
+            >
               <Text style={styles.saveBtnText}>Save Address</Text>
             </TouchableOpacity>
           </View>

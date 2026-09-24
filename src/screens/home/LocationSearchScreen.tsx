@@ -167,7 +167,10 @@ export const LocationSearchScreen: React.FC<Props> = ({ navigation, route }) => 
                 </Text>
               </View>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.shortItem} onPress={() => select(CP67_MALL_DESTINATION)}>
+            <TouchableOpacity
+              style={styles.shortItem}
+              onPress={() => select(CP67_MALL_DESTINATION)}
+            >
               <Ionicons name="briefcase-outline" size={18} color={Colors.primary} />
               <View style={styles.shortCopy}>
                 <Text style={styles.shortTitle}>Work</Text>

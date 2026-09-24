@@ -175,7 +175,7 @@ export const OtpVerificationScreen: React.FC<Props> = ({ route, navigation }) =>
               {Array.from({ length: 6 }).map((_, index) => {
                 const digit = otpDigits[index] ?? '';
                 const isFocused = focusedIndex === index;
-                console.log('index: ', index)
+                console.log('index: ', index);
                 return (
                   <TextInput
                     key={index}
@@ -303,7 +303,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 20,
     elevation: 16,
-    zIndex: 9999
+    zIndex: 9999,
   },
   otpWrap: {
     marginBottom: Layout.spacing.md,

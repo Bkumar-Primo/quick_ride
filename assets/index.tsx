@@ -10,5 +10,5 @@ export const images = {
   auto2D: require('./auto-2D.png'),
   cab2D: require('./cab-2D.png'),
   driver: require('./driver.png'),
-  qrAppIcon: require("./qr-app-icon.png")
+  qrAppIcon: require('./qr-app-icon.png'),
 };

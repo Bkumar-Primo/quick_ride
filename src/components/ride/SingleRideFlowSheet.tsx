@@ -167,11 +167,11 @@ export const SingleRideFlowSheet: React.FC<Props> = ({
   const needle = searchQuery.trim().toLowerCase();
   const filteredSearch = needle
     ? SEARCHABLE.filter(
-      (item) =>
-        item.title.toLowerCase().includes(needle) ||
-        item.subtitle.toLowerCase().includes(needle) ||
-        item.address.toLowerCase().includes(needle),
-    )
+        (item) =>
+          item.title.toLowerCase().includes(needle) ||
+          item.subtitle.toLowerCase().includes(needle) ||
+          item.address.toLowerCase().includes(needle),
+      )
     : SEARCHABLE;
 
   const vehicleIconName: keyof typeof Ionicons.glyphMap =
@@ -861,14 +861,13 @@ export const SingleRideFlowSheet: React.FC<Props> = ({
     const handleSaveAddress = () => {
       const locToSave = destination || activeRide?.destination || CP67_MALL_DESTINATION;
       addSavedPlace(locToSave);
-      Alert.alert(
-        'Address Saved!',
-        `"${locToSave.title}" has been saved to your Saved Places.`,
-      );
+      Alert.alert('Address Saved!', `"${locToSave.title}" has been saved to your Saved Places.`);
     };
 
     return (
-      <BottomSheetView style={[styles.sheetBody, { alignItems: 'center', paddingBottom: bottomPad }]}>
+      <BottomSheetView
+        style={[styles.sheetBody, { alignItems: 'center', paddingBottom: bottomPad }]}
+      >
         <View style={styles.successIconCircle}>
           <Ionicons name="checkmark" size={36} color={Colors.white} />
         </View>
